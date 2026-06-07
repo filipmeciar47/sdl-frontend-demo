@@ -79,17 +79,17 @@ async function callAPI(params, messages) {
       const delay = attempt < retryDelays.length ? retryDelays[attempt] : 15000;
       await new Promise(r => setTimeout(r, delay));
       if (attempt === retryDelays.length) {
-        throw new Error("Niečo sa pokazilo, skúste neskôr. (429)");
+        throw new Error(_lang === "en" ? "Something went wrong, please try later. (429)" : "Niečo sa pokazilo, skúste neskôr. (429)");
       }
       continue;
     }
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
-      throw new Error(err.error || "API chyba. Skúste znova.");
+      throw new Error(err.error || (_lang === "en" ? "API error. Please try again." : "API chyba. Skúste znova."));
     }
     const data = await response.json();
-    if (!data.content) throw new Error("Prázdna odpoveď. Skúste znova.");
+    if (!data.content) throw new Error(_lang === "en" ? "Empty response. Please try again." : "Prázdna odpoveď. Skúste znova.");
     return data.content;
   }
 }
@@ -176,7 +176,7 @@ export default function App() {
   function fetchIntegrated(levels) {
     const levelNames = levels.map(l => l.name).join(", ");
     const levelKeys = levels.map(l => l.key);
-    callAPI({ task: "integrated", levels: levelKeys }, [{ role: "user", content: "Téma: \"" + topicSet + "\"\n\nAnalyzuj túto tému z pohľadu úrovní: " + levelNames }])
+    callAPI({ task: "integrated", levels: levelKeys }, [{ role: "user", content: (_lang === "en" ? "Topic: \"" : "Téma: \"") + topicSet + (_lang === "en" ? "\"\n\nAnalyze this topic from the perspectives of levels: " : "\"\n\nAnalyzuj túto tému z pohľadu úrovní: ") + levelNames }])
       .then(reply => {
         levelKeys.forEach(key => {
           const marker = "[" + key.toUpperCase() + "]";
@@ -197,7 +197,7 @@ export default function App() {
       })
       .catch(err => {
         levelKeys.forEach(key => {
-          setColorChats(prev => prev[key] ? { ...prev, [key]: { ...prev[key], messages: [{ role: "error", content: err.message || "Nepodarilo sa načítať perspektívy." }] } } : prev);
+          setColorChats(prev => prev[key] ? { ...prev, [key]: { ...prev[key], messages: [{ role: "error", content: err.message || (_lang === "en" ? "Failed to load perspectives." : "Nepodarilo sa načítať perspektívy.") }] } } : prev);
         });
       })
       .finally(() => {
@@ -217,9 +217,9 @@ export default function App() {
 
   function fetchInitial(key) {
     setColorLoading(prev => ({ ...prev, [key]: true }));
-    callAPI({ level: key }, [{ role: "user", content: "Téma: \"" + topicSet + "\"\n\nPoskyni stručnú úvodnú perspektívu na túto tému z pohľadu tejto úrovne. MAX 2-3 vety. Buď konkrétny a výstižný." }])
+    callAPI({ level: key }, [{ role: "user", content: (_lang === "en" ? "Topic: \"" : "Téma: \"") + topicSet + (_lang === "en" ? "\"\n\nProvide a brief initial perspective on this topic from this level's viewpoint. MAX 2-3 sentences. Be specific and concise." : "\"\n\nPoskyni stručnú úvodnú perspektívu na túto tému z pohľadu tejto úrovne. MAX 2-3 vety. Buď konkrétny a výstižný.") }])
       .then(reply => setColorChats(prev => prev[key] ? { ...prev, [key]: { ...prev[key], messages: [{ role: "assistant", content: reply }] } } : prev))
-      .catch(err => setColorChats(prev => prev[key] ? { ...prev, [key]: { ...prev[key], messages: [{ role: "error", content: err.message || "Nepodarilo sa načítať perspektívu." }] } } : prev))
+      .catch(err => setColorChats(prev => prev[key] ? { ...prev, [key]: { ...prev[key], messages: [{ role: "error", content: err.message || (_lang === "en" ? "Failed to load perspective." : "Nepodarilo sa načítať perspektívu.") }] } } : prev))
       .finally(() => setColorLoading(prev => ({ ...prev, [key]: false })));
   }
 
@@ -228,11 +228,11 @@ export default function App() {
     if (!chat || colorLoading[key]) return;
     setColorLoading(prev => ({ ...prev, [key]: true }));
     setColorChats(prev => ({ ...prev, [key]: { ...prev[key], elaborated: true } }));
-    const msgs = [...chat.messages, { role: "user", content: "Rozviň túto perspektívu podrobnejšie. Vysvetli hlbšie, prečo táto úroveň vidí tému práve takto, aké sú jej silné stránky a kde naráža na svoje hranice. 6-10 viet." }];
+    const msgs = [...chat.messages, { role: "user", content: _lang === "en" ? "Expand this perspective in more detail. Explain more deeply why this level sees the topic this way, what its strengths are and where it meets its limits. 6-10 sentences." : "Rozviň túto perspektívu podrobnejšie. Vysvetli hlbšie, prečo táto úroveň vidí tému práve takto, aké sú jej silné stránky a kde naráža na svoje hranice. 6-10 viet." }];
     setColorChats(prev => ({ ...prev, [key]: { ...prev[key], messages: msgs } }));
-    callAPI({ level: key }, [{ role: "user", content: "Téma: \"" + topicSet + "\"" }, ...msgs])
+    callAPI({ level: key }, [{ role: "user", content: (_lang === "en" ? "Topic: \"" : "Téma: \"") + topicSet + "\"" }, ...msgs])
       .then(reply => setColorChats(prev => prev[key] ? { ...prev, [key]: { ...prev[key], messages: [...prev[key].messages, { role: "assistant", content: reply }] } } : prev))
-      .catch(err => setColorChats(prev => prev[key] ? { ...prev, [key]: { ...prev[key], messages: [...prev[key].messages, { role: "assistant", content: "Chyba: " + err.message }] } } : prev))
+      .catch(err => setColorChats(prev => prev[key] ? { ...prev, [key]: { ...prev[key], messages: [...prev[key].messages, { role: "assistant", content: (_lang === "en" ? "Error: " : "Chyba: ") + err.message }] } } : prev))
       .finally(() => setColorLoading(prev => ({ ...prev, [key]: false })));
   }
 
@@ -296,23 +296,25 @@ export default function App() {
       return l.name + " (" + l.sub + "): " + (lastMsg ? lastMsg.content : "");
     }).join("\n\n");
     try {
-      const prompt = "Téma: \"" + topicSet + "\"\n\nPerspektívy na porovnanie:\n" + levelDescs + "\n\nKde vznikajú napätia a konflikty medzi týmito perspektívami pri tejto konkrétnej téme? Čo jedna vidí ako riešenie, druhá môže vnímať ako problém?";
+      const prompt = _lang === "en"
+        ? "Topic: \"" + topicSet + "\"\n\nPerspectives to compare:\n" + levelDescs + "\n\nWhere do tensions and conflicts arise between these perspectives on this specific topic? What one sees as a solution, the other may perceive as a problem?"
+        : "Téma: \"" + topicSet + "\"\n\nPerspektívy na porovnanie:\n" + levelDescs + "\n\nKde vznikajú napätia a konflikty medzi týmito perspektívami pri tejto konkrétnej téme? Čo jedna vidí ako riešenie, druhá môže vnímať ako problém?";
       const reply = await callAPI({ task: "conflicts" }, [{ role: "user", content: prompt }]);
       setConflictResult(reply);
       setConflictHistory([{ role: "user", content: prompt }, { role: "assistant", content: reply }]);
-    } catch (err) { setConflictResult("Chyba: " + err.message); }
+    } catch (err) { setConflictResult((_lang === "en" ? "Error: " : "Chyba: ") + err.message); }
     finally { setConflictLoading(false); }
   }
 
   async function elaborateConflicts() {
     if (conflictLoading || !conflictResult) return;
     setConflictLoading(true);
-    const msgs = [...conflictHistory, { role: "user", content: "Rozviň tieto napätia hlbšie. Kde presne nastáva stret hodnôt? Aké praktické dôsledky má toto napätie v každodennom živote? Existuje spôsob, ako tieto perspektívy prepojiť bez toho, aby niektorá stratila svoju podstatu?" }];
+    const msgs = [...conflictHistory, { role: "user", content: _lang === "en" ? "Expand these tensions further. Where exactly does the clash of values occur? What are the practical consequences of this tension in everyday life? Is there a way to connect these perspectives without any of them losing its essence?" : "Rozviň tieto napätia hlbšie. Kde presne nastáva stret hodnôt? Aké praktické dôsledky má toto napätie v každodennom živote? Existuje spôsob, ako tieto perspektívy prepojiť bez toho, aby niektorá stratila svoju podstatu?" }];
     try {
       const reply = await callAPI({ task: "conflictsElaborate" }, msgs);
       setConflictResult(prev => prev + "\n\n" + reply);
       setConflictHistory(msgs.concat([{ role: "assistant", content: reply }]));
-    } catch (err) { setConflictResult(prev => prev + "\n\nChyba: " + err.message); }
+    } catch (err) { setConflictResult(prev => prev + "\n\n" + (_lang === "en" ? "Error: " : "Chyba: ") + err.message); }
     finally { setConflictLoading(false); }
   }
 
@@ -325,7 +327,7 @@ export default function App() {
       const reply = await callAPI({ task: "conflictsQuestion" }, msgs);
       setConflictResult(prev => prev + "\n\n" + q + "\n\n" + reply);
       setConflictHistory(msgs.concat([{ role: "assistant", content: reply }]));
-    } catch (err) { setConflictResult(prev => prev + "\n\nChyba: " + err.message); }
+    } catch (err) { setConflictResult(prev => prev + "\n\n" + (_lang === "en" ? "Error: " : "Chyba: ") + err.message); }
     finally { setConflictLoading(false); }
   }
 
@@ -337,16 +339,20 @@ export default function App() {
     const current = LEVELS[levelIdx];
     const previous = levelIdx > 0 ? LEVELS[levelIdx - 1] : null;
     setColorLoading(prev => ({ ...prev, [key]: true }));
-    const emergePrompt = previous
-      ? "Vysvetli, ako sa " + current.name + " úroveň vyvinula z predchádzajúcej " + previous.name + " úrovne v kontexte tejto témy. Popíš: 1) Aké boli podmienky v " + previous.name + ", ktoré prestali stačiť? 2) Aká kríza alebo rozpor viedol k vzniku " + current.name + "? 3) Čo konkrétne " + current.name + " priniesla ako odpoveď na limity " + previous.name + "? Uveď historický príklad relevantný k téme. 6-10 viet."
-      : "Vysvetli, prečo je " + current.name + " úroveň základom celej špirály. Ako sa prejavuje najzákladnejšia forma vedomia v kontexte tejto témy? 4-6 viet.";
+    const emergePrompt = _lang === "en"
+      ? (previous
+        ? "Explain how the " + current.name + " level emerged from the previous " + previous.name + " level in the context of this topic. Describe: 1) What conditions in " + previous.name + " stopped being sufficient? 2) What crisis or contradiction led to the emergence of " + current.name + "? 3) What specifically did " + current.name + " bring as a response to the limits of " + previous.name + "? Give a historical example relevant to the topic. 6-10 sentences."
+        : "Explain why the " + current.name + " level is the foundation of the entire spiral. How does the most basic form of consciousness manifest in the context of this topic? 4-6 sentences.")
+      : (previous
+        ? "Vysvetli, ako sa " + current.name + " úroveň vyvinula z predchádzajúcej " + previous.name + " úrovne v kontexte tejto témy. Popíš: 1) Aké boli podmienky v " + previous.name + ", ktoré prestali stačiť? 2) Aká kríza alebo rozpor viedol k vzniku " + current.name + "? 3) Čo konkrétne " + current.name + " priniesla ako odpoveď na limity " + previous.name + "? Uveď historický príklad relevantný k téme. 6-10 viet."
+        : "Vysvetli, prečo je " + current.name + " úroveň základom celej špirály. Ako sa prejavuje najzákladnejšia forma vedomia v kontexte tejto témy? 4-6 viet.");
     const msgs = [...chat.messages, { role: "user", content: emergePrompt }];
     setColorChats(prev => ({ ...prev, [key]: { ...prev[key], messages: msgs } }));
     try {
-      const reply = await callAPI({ level: key }, [{ role: "user", content: "Téma: \"" + topicSet + "\"" }, ...msgs]);
+      const reply = await callAPI({ level: key }, [{ role: "user", content: (_lang === "en" ? "Topic: \"" : "Téma: \"") + topicSet + "\"" }, ...msgs]);
       setColorChats(prev => ({ ...prev, [key]: { ...prev[key], messages: [...prev[key].messages, { role: "assistant", content: reply }] } }));
     } catch (err) {
-      setColorChats(prev => ({ ...prev, [key]: { ...prev[key], messages: [...prev[key].messages, { role: "assistant", content: "Chyba: " + err.message }] } }));
+      setColorChats(prev => ({ ...prev, [key]: { ...prev[key], messages: [...prev[key].messages, { role: "assistant", content: (_lang === "en" ? "Error: " : "Chyba: ") + err.message }] } }));
     } finally { setColorLoading(prev => ({ ...prev, [key]: false })); }
   }
 
@@ -358,16 +364,20 @@ export default function App() {
     const current = LEVELS[levelIdx];
     const next = levelIdx < LEVELS.length - 1 ? LEVELS[levelIdx + 1] : null;
     setColorLoading(prev => ({ ...prev, [key]: true }));
-    const growthPrompt = next
-      ? "Analyzuj, kam smeruje " + current.name + " perspektíva v kontexte tejto témy, keď ju dovedieš do jej logických dôsledkov. Konkrétne ukáž: 1) Aké otázky si táto perspektíva začína klásť, na ktoré sama nemá odpoveď? 2) Kde naráža na svoju vlastnú hranicu — nie ako chybu, ale ako prirodzený horizont? 3) Čo sa objavuje za týmto horizontom, čo táto perspektíva zatiaľ nevidí, ale už tuší? Nepoužívaj názvy úrovní Špirálovej dynamiky. Hovor o tom, čo sa objavuje, nie o tom, kam by sa mal človek posunúť. 6-10 viet."
-      : "Analyzuj, kam smeruje " + current.name + " perspektíva — najširšia v Špirálovej dynamike — v kontexte tejto témy. Čo zostáva nevypovedané aj z tohto najcelostnejšieho pohľadu? Kde sa aj táto perspektíva stretáva s tajomstvom, ktoré presahuje akúkoľvek mapu? 4-6 viet.";
+    const growthPrompt = _lang === "en"
+      ? (next
+        ? "Analyze where the " + current.name + " perspective leads in the context of this topic when you follow it to its logical conclusions. Specifically show: 1) What questions does this perspective begin to ask that it cannot answer itself? 2) Where does it encounter its own limit — not as a flaw, but as a natural horizon? 3) What appears beyond this horizon that this perspective does not yet see, but already senses? Do not use Spiral Dynamics level names. Talk about what appears, not about where a person should move. 6-10 sentences."
+        : "Analyze where the " + current.name + " perspective — the widest in Spiral Dynamics — leads in the context of this topic. What remains unsaid even from this most holistic viewpoint? Where does even this perspective encounter a mystery that transcends any map? 4-6 sentences.")
+      : (next
+        ? "Analyzuj, kam smeruje " + current.name + " perspektíva v kontexte tejto témy, keď ju dovedieš do jej logických dôsledkov. Konkrétne ukáž: 1) Aké otázky si táto perspektíva začína klásť, na ktoré sama nemá odpoveď? 2) Kde naráža na svoju vlastnú hranicu — nie ako chybu, ale ako prirodzený horizont? 3) Čo sa objavuje za týmto horizontom, čo táto perspektíva zatiaľ nevidí, ale už tuší? Nepoužívaj názvy úrovní Špirálovej dynamiky. Hovor o tom, čo sa objavuje, nie o tom, kam by sa mal človek posunúť. 6-10 viet."
+        : "Analyzuj, kam smeruje " + current.name + " perspektíva — najširšia v Špirálovej dynamike — v kontexte tejto témy. Čo zostáva nevypovedané aj z tohto najcelostnejšieho pohľadu? Kde sa aj táto perspektíva stretáva s tajomstvom, ktoré presahuje akúkoľvek mapu? 4-6 viet.");
     const msgs = [...chat.messages, { role: "user", content: growthPrompt }];
     setColorChats(prev => ({ ...prev, [key]: { ...prev[key], messages: msgs } }));
     try {
-      const reply = await callAPI({ level: key }, [{ role: "user", content: "Téma: \"" + topicSet + "\"" }, ...msgs]);
+      const reply = await callAPI({ level: key }, [{ role: "user", content: (_lang === "en" ? "Topic: \"" : "Téma: \"") + topicSet + "\"" }, ...msgs]);
       setColorChats(prev => ({ ...prev, [key]: { ...prev[key], messages: [...prev[key].messages, { role: "assistant", content: reply }] } }));
     } catch (err) {
-      setColorChats(prev => ({ ...prev, [key]: { ...prev[key], messages: [...prev[key].messages, { role: "assistant", content: "Chyba: " + err.message }] } }));
+      setColorChats(prev => ({ ...prev, [key]: { ...prev[key], messages: [...prev[key].messages, { role: "assistant", content: (_lang === "en" ? "Error: " : "Chyba: ") + err.message }] } }));
     } finally { setColorLoading(prev => ({ ...prev, [key]: false })); }
   }
 
@@ -375,7 +385,7 @@ export default function App() {
   const openChatKeys = Object.keys(colorChats);
 
   function exportConversation() {
-    const timestamp = new Date().toLocaleString("sk-SK");
+    const timestamp = new Date().toLocaleString(_lang === "en" ? "en-US" : "sk-SK");
     const chatKeys = LEVELS.filter(l => colorChats[l.key]).map(l => l.key);
     const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");
     let body = "";
@@ -386,24 +396,24 @@ export default function App() {
         body += '<div class="section"><h2 style="color:' + l.clr + '">' + esc(l.name) + ' — ' + esc(l.sub) + '</h2><p class="axis">' + axisLabel + '</p>';
         chat.messages.forEach(m => {
           if (m.role === "error") return;
-          if (m.role === "user") body += '<div class="q"><strong>Otázka:</strong> ' + esc(m.content) + '</div>';
+          if (m.role === "user") body += '<div class="q"><strong>' + (_lang === "en" ? "Question:" : "Otázka:") + '</strong> ' + esc(m.content) + '</div>';
           else body += '<div class="a">' + esc(m.content) + '</div>';
         });
         body += '</div>';
       });
     }
     if (conflictResult) body += '<div class="section"><h2>Napätia medzi perspektívami</h2><div class="a">' + esc(conflictResult) + '</div></div>';
-    if (reflection) body += '<div class="section"><h2>Vzorec explorácie</h2><div class="a">' + esc(reflection) + '</div></div>';
+    if (reflection) body += '<div class="section"><h2>' + (_lang === "en" ? "Exploration pattern" : "Vzorec explorácie") + '</h2><div class="a">' + esc(reflection) + '</div></div>';
     if (mainChat.length > 0) {
-      body += '<div class="section"><h2>Integratívny dialóg</h2>';
+      body += '<div class="section"><h2>' + (_lang === "en" ? "Integrative dialogue" : "Integratívny dialóg") + '</h2>';
       mainChat.forEach(m => {
-        if (m.role === "user") body += '<div class="q"><strong>Otázka:</strong> ' + esc(m.content) + '</div>';
+        if (m.role === "user") body += '<div class="q"><strong>' + (_lang === "en" ? "Question:" : "Otázka:") + '</strong> ' + esc(m.content) + '</div>';
         else body += '<div class="a">' + esc(m.content) + '</div>';
       });
       body += '</div>';
     }
     const css = 'body{font-family:Georgia,serif;max-width:800px;margin:0 auto;padding:32px;color:#1a1a1a;font-size:13px;line-height:1.7}h1{font-size:20px;margin-bottom:4px}.meta{color:#666;font-size:11px;margin-bottom:32px}.section{margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid #e5e5e5}h2{font-size:15px;margin-bottom:4px}.axis{font-size:10px;color:#888;margin:0 0 12px;text-transform:uppercase;letter-spacing:.1em}.q{background:#f5f5f5;border-left:3px solid #ccc;padding:8px 12px;margin:10px 0;font-style:italic;font-size:12px}.a{margin:10px 0;white-space:pre-wrap}.footer{text-align:center;font-size:10px;color:#aaa;margin-top:40px}@media print{body{padding:0}}';
-    const html = '<!DOCTYPE html><html lang="sk"><head><meta charset="UTF-8"><title>Spiral Dynamics — ' + esc(topicSet) + '</title><style>' + css + '</style></head><body><h1>Spiral Dynamics Lens</h1><div class="meta"><strong>Téma:</strong> ' + esc(topicSet) + ' &nbsp;·&nbsp; ' + timestamp + '</div>' + body + '<div class="footer">Vygenerované aplikáciou Spiral Dynamics Lens</div></body></html>';
+    const html = '<!DOCTYPE html><html lang="' + (_lang === "en" ? "en" : "sk") + '"><head><meta charset="UTF-8"><title>Spiral Dynamics — ' + esc(topicSet) + '</title><style>' + css + '</style></head><body><h1>Spiral Dynamics Lens</h1><div class="meta"><strong>' + (_lang === "en" ? "Topic:" : "Téma:") + '</strong> ' + esc(topicSet) + ' &nbsp;·&nbsp; ' + timestamp + '</div>' + body + '<div class="footer">' + (_lang === "en" ? "Generated by Spiral Dynamics Lens" : "Vygenerované aplikáciou Spiral Dynamics Lens") + '</div></body></html>';
     const win = window.open("", "_blank");
     if (!win) return;
     win.document.write(html);
@@ -413,23 +423,23 @@ export default function App() {
 
   function exportMarkdown() {
     const chatKeys = LEVELS.filter(l => colorChats[l.key]).map(l => l.key);
-    let md = `# Spiral Dynamics Lens\n**Téma:** ${topicSet}\n\n`;
+    let md = `# Spiral Dynamics Lens\n${_lang === "en" ? "**Topic:**" : "**Téma:**"} ${topicSet}\n\n`;
     chatKeys.forEach(key => {
       const l = LEVEL_MAP[key]; const chat = colorChats[key];
       const axisLabel = l.axis === "express" ? "Express-self" : "Deny-self";
       md += `### ${l.name} — ${l.sub}\n*${axisLabel}*\n\n`;
       chat.messages.forEach(m => {
         if (m.role === "error") return;
-        if (m.role === "user") md += `**Otázka:** ${m.content}\n\n`;
+        if (m.role === "user") md += `**${_lang === "en" ? "Question" : "Otázka"}:** ${m.content}\n\n`;
         else md += `${m.content}\n\n`;
       });
     });
-    if (conflictResult) md += `## Napätia medzi perspektívami\n\n${conflictResult}\n\n`;
-    if (reflection) md += `## Vzorec explorácie\n\n${reflection}\n\n`;
+    if (conflictResult) md += `## ${_lang === "en" ? "Tensions between perspectives" : "Napätia medzi perspektívami"}\n\n${conflictResult}\n\n`;
+    if (reflection) md += `## ${_lang === "en" ? "Exploration pattern" : "Vzorec explorácie"}\n\n${reflection}\n\n`;
     if (mainChat.length > 0) {
-      md += `## Integratívny dialóg\n\n`;
+      md += `## ${_lang === "en" ? "Integrative dialogue" : "Integratívny dialóg"}\n\n`;
       mainChat.forEach(m => {
-        if (m.role === "user") md += `**Otázka:** ${m.content}\n\n`;
+        if (m.role === "user") md += `**${_lang === "en" ? "Question" : "Otázka"}:** ${m.content}\n\n`;
         else md += `${m.content}\n\n`;
       });
     }
@@ -450,9 +460,9 @@ export default function App() {
         const text = e.target.result;
 
         // Topic
-        const topicMatch = text.match(/^\*{0,2}Téma:\*{0,2}\s*(.+)$/m);
+        const topicMatch = text.match(/^\*{0,2}(?:Téma|Topic):\*{0,2}\s*(.+)$/m);
         const importedTopic = topicMatch ? topicMatch[1].trim() : "";
-        if (!importedTopic) { alert("Súbor neobsahuje tému — skontroluj formát .md súboru."); return; }
+        if (!importedTopic) { alert(_lang === "en" ? "File does not contain a topic — check the .md file format." : "Súbor neobsahuje tému — skontroluj formát .md súboru."); return; }
 
         // Level sections → last assistant message per level
         const newColorChats = {};
@@ -466,7 +476,7 @@ export default function App() {
           if (!sectionMatch) return;
           const rawSection = sectionMatch[1];
           // Split on user questions; last chunk = last assistant message
-          const parts = rawSection.split(/\n\*\*Otázka:\*\*[^\n]*\n/);
+          const parts = rawSection.split(/\n\*\*(?:Otázka|Question):\*\*[^\n]*\n/);
           // Strip the axis line (*Express-self* / *Deny-self*) and leading whitespace
           const lastPart = (parts[parts.length - 1] || "").replace(/^\s*\*[^\n]+\*\s*\n/, "").trim();
           if (!lastPart) return;
@@ -475,7 +485,7 @@ export default function App() {
         });
 
         // Conflict result
-        const conflictRx = /##\s+Napätia medzi perspektívami\s*\n+([\s\S]*?)(?=\n##\s+|$)/;
+        const conflictRx = /##\s+(?:Napätia medzi perspektívami|Tensions between perspectives)\s*\n+([\s\S]*?)(?=\n##\s+|$)/;
         const conflictMatch = text.match(conflictRx);
         const importedConflict = conflictMatch ? conflictMatch[1].trim() : "";
 
@@ -488,14 +498,14 @@ export default function App() {
         setSelected({});
         setConflictResult(importedConflict);
         setConflictHistory(importedConflict
-          ? [{ role: "user", content: `Téma: "${importedTopic}"\n\nAnalýza napätí:` }, { role: "assistant", content: importedConflict }]
+          ? [{ role: "user", content: (_lang === "en" ? `Topic: "${importedTopic}"\n\nTension analysis:` : `Téma: "${importedTopic}"\n\nAnalýza napätí:`) }, { role: "assistant", content: importedConflict }]
           : []);
         setConflictInput("");
         setMainChat([]);
         setMainInput("");
         setIntegratedContext("");
       } catch (err) {
-        alert("Chyba pri načítaní súboru. Skontroluj, či ide o .md exportovaný z tejto aplikácie.");
+        alert(_lang === "en" ? "Error loading file. Check that it is a .md file exported from this application." : "Chyba pri načítaní súboru. Skontroluj, či ide o .md exportovaný z tejto aplikácie.");
       }
     };
     reader.readAsText(file, "utf-8");
@@ -507,12 +517,12 @@ export default function App() {
     const msgs = [...mainChat, { role: "user", content: msg }];
     setMainChat(msgs); setMainInput(""); setMainLoading(true);
     try {
-      let ctx = "Téma: \"" + topicSet + "\"";
-      if (integratedContext) ctx += "\n\nIntegrované perspektívy:" + integratedContext;
-      if (reflection) ctx += "\n\nVzorec explorácie: " + reflection;
-      const reply = await callAPI({ task: "main" }, [{ role: "user", content: ctx }, { role: "assistant", content: "Rozumiem. Pokračujeme." }, ...msgs]);
+      let ctx = (_lang === "en" ? "Topic: \"" : "Téma: \"") + topicSet + "\"";
+      if (integratedContext) ctx += _lang === "en" ? "\n\nIntegrated perspectives:" + integratedContext : "\n\nIntegrované perspektívy:" + integratedContext;
+      if (reflection) ctx += (_lang === "en" ? "\n\nExploration pattern: " : "\n\nVzorec explorácie: ") + reflection;
+      const reply = await callAPI({ task: "main" }, [{ role: "user", content: ctx }, { role: "assistant", content: _lang === "en" ? "Understood. Let's continue." : "Rozumiem. Pokračujeme." }, ...msgs]);
       setMainChat(m => [...m, { role: "assistant", content: reply }]);
-    } catch (err) { setMainChat(m => [...m, { role: "assistant", content: "Chyba: " + err.message }]); }
+    } catch (err) { setMainChat(m => [...m, { role: "assistant", content: (_lang === "en" ? "Error: " : "Chyba: ") + err.message }]); }
     finally { setMainLoading(false); }
   }
 
@@ -786,7 +796,7 @@ export default function App() {
                         {iconR && <img src={iconR} style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", flexShrink: 0, filter: `drop-shadow(0 0 6px ${lv.clr}88)` }} />}
                       </div>
                       <div style={{ textAlign: "center", fontFamily: "'DM Sans',sans-serif", fontSize: 9, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,255,255,0.32)" }}>
-                        {isExpress ? "Express Self · JA" : "Deny Self · MY"}
+                        {_lang === "en" ? (isExpress ? "Express Self" : "Other-Oriented") : (isExpress ? "Express Self · JA" : "Deny Self · MY")}
                       </div>
                     </div>
                   );
@@ -882,7 +892,7 @@ export default function App() {
                             m.role === "error" ? (
                               <div key={i} style={{ padding: "10px 14px", background: "rgba(248,113,113,.06)", border: "1px solid rgba(248,113,113,.15)", borderRadius: 8, marginBottom: 12 }}>
                                 <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13, color: "#F87171", marginBottom: 8 }}>{m.content}</div>
-                                <button onClick={() => retryChat(key)} style={{ padding: "5px 14px", background: "rgba(248,113,113,.1)", border: "1px solid rgba(248,113,113,.2)", borderRadius: 6, color: "#F87171", fontFamily: "'DM Sans',sans-serif", fontSize: 12, cursor: "pointer" }}>Skúsiť znova</button>
+                                <button onClick={() => retryChat(key)} style={{ padding: "5px 14px", background: "rgba(248,113,113,.1)", border: "1px solid rgba(248,113,113,.2)", borderRadius: 6, color: "#F87171", fontFamily: "'DM Sans',sans-serif", fontSize: 12, cursor: "pointer" }}>{_lang === "en" ? "Try again" : "Skúsiť znova"}</button>
                               </div>
                             ) : m.role === "user" ? (
                               <div key={i} className="mg mu">{m.content}</div>
