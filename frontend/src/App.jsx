@@ -607,7 +607,7 @@ export default function App() {
       <div className="bg" />
       <div className="wrap">
         <div style={{ textAlign: "center", marginBottom: 0 }}><img src={TITLE_IMG} alt="Spiral Dynamics Lens" style={{ width: "min(380px, 70vw)", height: "auto", display: "block", margin: "0 auto" }} /></div>
-        <p className="sub">Viacúrovňový pohľad na realitu</p>
+        <p className="sub">{_lang === "en" ? "Multi-level view of reality" : "Viacúrovňový pohľad na realitu"}</p>
 
         {!topicSet ? (
           <div style={{ maxWidth: 600, margin: "0 auto" }}>
@@ -686,7 +686,7 @@ export default function App() {
                   <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
                   </svg>
-                  Štýl zobrazenia
+                  {_lang === "en" ? "Display style" : "Štýl zobrazenia"}
                 </div>
               </div>
 
@@ -796,13 +796,13 @@ export default function App() {
             </div>
 
             <div id="tut-mode-toggle" className="toggle-wrap">
-              <span style={{ opacity: integrated ? .4 : 1 }}>Jednotlivá úroveň</span>
+              <span style={{ opacity: integrated ? .4 : 1 }}>{_lang === "en" ? "Single level" : "Jednotlivá úroveň"}</span>
               <div className={"toggle" + (integrated ? " on" : "")} onClick={() => setIntegrated(!integrated)}>
                 <div className="toggle-dot" />
               </div>
-              <span style={{ opacity: integrated ? 1 : .4 }}>Integrovaný pohľad</span>
+              <span style={{ opacity: integrated ? 1 : .4 }}>{_lang === "en" ? "Integrated view" : "Integrovaný pohľad"}</span>
             </div>
-            <div className="hint">{integrated ? "Kliknutím zvolíte vrstvu + vnútorňé, potom spustíte analýzu" : "Kliknutím zvolíte úroveň, potom kliknite Spustiť analýzu"}</div>
+            <div className="hint">{_lang === "en" ? (integrated ? "Click to select a layer + inner ones, then run analysis" : "Click a level, then click Run analysis") : (integrated ? "Kliknutím zvolíte vrstvu + vnútorňé, potom spustíte analýzu" : "Kliknutím zvolíte úroveň, potom kliknite Spustiť analýzu")}</div>
 
             {pendingLevels.size > 0 && (
               <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
@@ -815,7 +815,7 @@ export default function App() {
                   ) : null;
                 })}
                 <button id="tut-run-analysis" onClick={runAnalysis} style={{ marginLeft: 8, padding: "6px 18px", borderRadius: 99, border: "1px solid rgba(250,204,21,0.45)", background: "rgba(250,204,21,0.12)", color: "#FACC15", fontFamily: "'DM Sans',sans-serif", fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", cursor: "pointer" }}>
-                  Spustiť analýzu
+                  {_lang === "en" ? "Run analysis" : "Spustiť analýzu"}
                 </button>
               </div>
             )}
@@ -892,16 +892,16 @@ export default function App() {
                           )}
                           {!chat.elaborated && !isLoading && chat.messages.length > 0 && chat.messages[0].role === "assistant" && (
                             <div id={key === openChatKeys[0] ? "tut-feat-actions" : undefined} style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
-                              <button onClick={() => elaborateChat(key)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", background: l.clr + "0a", border: "1px solid " + l.clr + "25", borderRadius: 7, color: l.clr + "90", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer", transition: "all .2s", letterSpacing: ".5px" }}>Rozvinúť perspektívu</button>
-                              <button onClick={() => showEmergence(key)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", background: prevClr ? prevClr + "0a" : "rgba(255,255,255,.03)", border: "1px solid " + (prevClr ? prevClr + "35" : "rgba(255,255,255,.1)"), borderRadius: 7, color: l.clr + "90", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer", transition: "all .2s", letterSpacing: ".5px" }}>Ako vznikla táto perspektíva</button>
-                              <button onClick={() => showGrowthDirection(key)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", background: nextClr ? nextClr + "0a" : "rgba(255,255,255,.03)", border: "1px solid " + (nextClr ? nextClr + "35" : "rgba(255,255,255,.1)"), borderRadius: 7, color: l.clr + "90", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer", transition: "all .2s", letterSpacing: ".5px" }}>Kam táto perspektíva smeruje</button>
+                              <button onClick={() => elaborateChat(key)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", background: l.clr + "0a", border: "1px solid " + l.clr + "25", borderRadius: 7, color: l.clr + "90", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer", transition: "all .2s", letterSpacing: ".5px" }}>{_lang === "en" ? "Expand perspective" : "Rozvinúť perspektívu"}</button>
+                              <button onClick={() => showEmergence(key)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", background: prevClr ? prevClr + "0a" : "rgba(255,255,255,.03)", border: "1px solid " + (prevClr ? prevClr + "35" : "rgba(255,255,255,.1)"), borderRadius: 7, color: l.clr + "90", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer", transition: "all .2s", letterSpacing: ".5px" }}>{_lang === "en" ? "How this perspective emerged" : "Ako vznikla táto perspektíva"}</button>
+                              <button onClick={() => showGrowthDirection(key)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", background: nextClr ? nextClr + "0a" : "rgba(255,255,255,.03)", border: "1px solid " + (nextClr ? nextClr + "35" : "rgba(255,255,255,.1)"), borderRadius: 7, color: l.clr + "90", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer", transition: "all .2s", letterSpacing: ".5px" }}>{_lang === "en" ? "Where this perspective leads" : "Kam táto perspektíva smeruje"}</button>
                             </div>
                           )}
-                          {isLoading && <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0" }}><div className="ldb" style={{ color: l.clr }} /><span className="lt">Premýšľam...</span></div>}
+                          {isLoading && <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0" }}><div className="ldb" style={{ color: l.clr }} /><span className="lt">{_lang === "en" ? "Thinking..." : "Premýšľam..."}</span></div>}
                         </div>
                         <div className="cr">
-                          <input ref={el => { chatInputRefs.current[key] = el; }} className="ci" value={chat.input} onChange={e => setCCInput(key, e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); sendCC(key); }}} placeholder={"Opýtaj sa z pohľadu " + l.name.toLowerCase() + "..."} disabled={isLoading} style={{ borderColor: l.clr + "20" }} />
-                          <button className="sb" onClick={() => sendCC(key)} disabled={isLoading || !chat.input.trim()} style={{ background: l.clr + "18", color: l.clr, border: "1px solid " + l.clr + "30" }}>Odoslať</button>
+                          <input ref={el => { chatInputRefs.current[key] = el; }} className="ci" value={chat.input} onChange={e => setCCInput(key, e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); sendCC(key); }}} placeholder={_lang === "en" ? ("Ask from the " + l.name.toLowerCase() + " perspective...") : ("Opýtaj sa z pohľadu " + l.name.toLowerCase() + "...")} disabled={isLoading} style={{ borderColor: l.clr + "20" }} />
+                          <button className="sb" onClick={() => sendCC(key)} disabled={isLoading || !chat.input.trim()} style={{ background: l.clr + "18", color: l.clr, border: "1px solid " + l.clr + "30" }}>{_lang === "en" ? "Send" : "Odoslať"}</button>
                         </div>
                       </div>
                     </div>
@@ -922,7 +922,7 @@ export default function App() {
                       </button>
                       {selectedCount >= 2 && (
                         <button id="tut-feat-conflict" className="ib ib-conflict" onClick={analyzeConflicts} disabled={conflictLoading}>
-                          {conflictLoading ? "Analyzujem napätia..." : "Napätia medzi " + selectedCount + " perspektívami"}
+                          {conflictLoading ? (_lang === "en" ? "Analyzing tensions..." : "Analyzujem napätia...") : (_lang === "en" ? "Tensions between " + selectedCount + " perspectives" : "Napätia medzi " + selectedCount + " perspektívami")}
                         </button>
                       )}
                     </div>
@@ -939,14 +939,14 @@ export default function App() {
                       ))}
                     </div>
                     <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 14, fontWeight: 300, lineHeight: 1.8, color: "rgba(221,221,221,.85)", whiteSpace: "pre-line" }}>{conflictResult}</div>
-                    {conflictLoading && <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0" }}><div className="ldb" style={{ color: "#F87171" }} /><span className="lt">Analyzujem...</span></div>}
+                    {conflictLoading && <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0" }}><div className="ldb" style={{ color: "#F87171" }} /><span className="lt">{_lang === "en" ? "Analyzing..." : "Analyzujem..."}</span></div>}
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
-                      <button onClick={elaborateConflicts} disabled={conflictLoading} style={{ padding: "5px 14px", background: "rgba(248,113,113,.08)", border: "1px solid rgba(248,113,113,.2)", borderRadius: 7, color: "#F87171", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer", transition: "all .2s", letterSpacing: ".5px" }}>Rozvinúť napätia</button>
-                      <button onClick={() => setConflictResult("")} style={{ padding: "5px 14px", background: "none", border: "1px solid rgba(255,255,255,.1)", borderRadius: 7, color: "rgba(255,255,255,.4)", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer" }}>Zavrieť</button>
+                      <button onClick={elaborateConflicts} disabled={conflictLoading} style={{ padding: "5px 14px", background: "rgba(248,113,113,.08)", border: "1px solid rgba(248,113,113,.2)", borderRadius: 7, color: "#F87171", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer", transition: "all .2s", letterSpacing: ".5px" }}>{_lang === "en" ? "Expand tensions" : "Rozvinúť napätia"}</button>
+                      <button onClick={() => setConflictResult("")} style={{ padding: "5px 14px", background: "none", border: "1px solid rgba(255,255,255,.1)", borderRadius: 7, color: "rgba(255,255,255,.4)", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer" }}>{_lang === "en" ? "Close" : "Zavrieť"}</button>
                     </div>
                     <div style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "flex-end" }}>
-                      <input className="ci" value={conflictInput} onChange={e => setConflictInput(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); sendConflictQuestion(); }}} placeholder="Dopýtaj sa na napätia..." disabled={conflictLoading} style={{ borderColor: "rgba(248,113,113,.15)", fontSize: 13 }} />
-                      <button className="sb" onClick={sendConflictQuestion} disabled={conflictLoading || !conflictInput.trim()} style={{ background: "rgba(248,113,113,.1)", color: "#F87171", border: "1px solid rgba(248,113,113,.2)" }}>Opýtať sa</button>
+                      <input className="ci" value={conflictInput} onChange={e => setConflictInput(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); sendConflictQuestion(); }}} placeholder={_lang === "en" ? "Ask about tensions..." : "Dopýtaj sa na napätia..."} disabled={conflictLoading} style={{ borderColor: "rgba(248,113,113,.15)", fontSize: 13 }} />
+                      <button className="sb" onClick={sendConflictQuestion} disabled={conflictLoading || !conflictInput.trim()} style={{ background: "rgba(248,113,113,.1)", color: "#F87171", border: "1px solid rgba(248,113,113,.2)" }}>{_lang === "en" ? "Ask" : "Opýtať sa"}</button>
                     </div>
                   </div>
                 )}
@@ -954,9 +954,9 @@ export default function App() {
             )}
 
             <div id="tut-feat-integrative" className="ms">
-              <div className="ml"><Ico k="yellow" size={20} /> Integratívny dialóg <span className="bg2">Žltá</span></div>
-              <div className="msl">Pokračuj v skúmaní témy z integratívnej, systémovej perspektívy</div>
-              {integratedContext && <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 11, color: "rgba(250,204,21,.5)", marginTop: -8, marginBottom: 12, fontStyle: "italic" }}>Integrované perspektívy sú zahrnuté v kontexte</div>}
+              <div className="ml"><Ico k="yellow" size={20} /> {_lang === "en" ? "Integrative dialogue" : "Integratívny dialóg"} <span className="bg2">{_lang === "en" ? "Yellow" : "Žltá"}</span></div>
+              <div className="msl">{_lang === "en" ? "Continue exploring the topic from an integrative, systemic perspective" : "Pokračuj v skúmaní témy z integratívnej, systémovej perspektívy"}</div>
+              {integratedContext && <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 11, color: "rgba(250,204,21,.5)", marginTop: -8, marginBottom: 12, fontStyle: "italic" }}>{_lang === "en" ? "Integrated perspectives are included in context" : "Integrované perspektívy sú zahrnuté v kontexte"}</div>}
               {reflection && (
                 <div style={{ padding: "12px 16px", marginBottom: 14, background: "rgba(250,204,21,.04)", border: "1px solid rgba(250,204,21,.1)", borderRadius: 10, fontFamily: "'DM Sans',sans-serif", fontSize: 12, fontWeight: 300, lineHeight: 1.7, color: "rgba(250,204,21,.55)", fontStyle: "italic" }}>
                   {reflection}
@@ -964,24 +964,24 @@ export default function App() {
               )}
               {mainChat.length > 0 && <div style={{ marginBottom: 14 }}>
                 {mainChat.map((m, i) => <div key={i} className={"mg " + (m.role === "user" ? "mu" : "ma")} style={m.role === "user" ? { borderLeftColor: "rgba(250,204,21,.25)" } : {}}>{m.content}</div>)}
-                {mainLoading && <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0" }}><div className="ldb" style={{ color: "#FACC15" }} /><span className="lt">Integrujem perspektívy...</span></div>}
+                {mainLoading && <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0" }}><div className="ldb" style={{ color: "#FACC15" }} /><span className="lt">{_lang === "en" ? "Integrating perspectives..." : "Integrujem perspektívy..."}</span></div>}
                 <div ref={mainEndRef} />
               </div>}
               <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
-                <input className="ci" value={mainInput} onChange={e => setMainInput(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); sendMain(); }}} placeholder="Opýtaj sa, rozvíjaj tému integratívne..." disabled={mainLoading} style={{ borderColor: "rgba(250,204,21,.15)" }} />
-                <button className="sb" onClick={sendMain} disabled={mainLoading || !mainInput.trim()} style={{ background: "rgba(250,204,21,.1)", color: "#FACC15", border: "1px solid rgba(250,204,21,.2)" }}>Odoslať</button>
+                <input className="ci" value={mainInput} onChange={e => setMainInput(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); sendMain(); }}} placeholder={_lang === "en" ? "Ask, explore the topic integratively..." : "Opýtaj sa, rozvíjaj tému integratívne..."} disabled={mainLoading} style={{ borderColor: "rgba(250,204,21,.15)" }} />
+                <button className="sb" onClick={sendMain} disabled={mainLoading || !mainInput.trim()} style={{ background: "rgba(250,204,21,.1)", color: "#FACC15", border: "1px solid rgba(250,204,21,.2)" }}>{_lang === "en" ? "Send" : "Odoslať"}</button>
               </div>
             </div>
-            <div className="ft">Každá perspektíva je autentická {"·"} Žiadna nie je lepšia ani horšia</div>
+            <div className="ft">{_lang === "en" ? "Every perspective is authentic · None is better or worse" : "Každá perspektíva je autentická · Žiadna nie je lepšia ani horšia"}</div>
             <div style={{ textAlign: "center", marginTop: 20, display: "flex", justifyContent: "center", gap: 12 }}>
-              <button id="tut-feat-newtopic" className="btn" onClick={() => { setTopicSet(""); setTopic(""); }} style={{ fontSize: 11, padding: "8px 24px", margin: 0 }}>Nová téma</button>
+              <button id="tut-feat-newtopic" className="btn" onClick={() => { setTopicSet(""); setTopic(""); }} style={{ fontSize: 11, padding: "8px 24px", margin: 0 }}>{_lang === "en" ? "New topic" : "Nová téma"}</button>
               {openChatKeys.length > 0 && (
                 <div data-export-menu style={{ position: "relative" }}>
-                  <button id="tut-feat-export" className="btn" onClick={() => setExportMenuOpen(p => !p)} style={{ fontSize: 11, padding: "8px 24px", margin: 0, background: "rgba(255,255,255,.06)", borderColor: "rgba(255,255,255,.15)", color: "rgba(255,255,255,.6)" }}>Exportovať ▾</button>
+                  <button id="tut-feat-export" className="btn" onClick={() => setExportMenuOpen(p => !p)} style={{ fontSize: 11, padding: "8px 24px", margin: 0, background: "rgba(255,255,255,.06)", borderColor: "rgba(255,255,255,.15)", color: "rgba(255,255,255,.6)" }}>{_lang === "en" ? "Export ▾" : "Exportovať ▾"}</button>
                   {exportMenuOpen && (
                     <div style={{ position: "absolute", bottom: "calc(100% + 4px)", left: 0, background: "rgba(10,10,18,.97)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 8, overflow: "hidden", zIndex: 200, minWidth: "100%", boxShadow: "0 4px 24px rgba(0,0,0,.5)" }}>
-                      <button onClick={() => { exportConversation(); setExportMenuOpen(false); }} style={{ display: "block", width: "100%", padding: "9px 18px", background: "none", border: "none", borderBottom: "1px solid rgba(255,255,255,.07)", color: "rgba(255,255,255,.7)", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer", textAlign: "left", whiteSpace: "nowrap" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,.06)"} onMouseLeave={e => e.currentTarget.style.background = "none"}>Stiahnuť PDF</button>
-                      <button onClick={() => { exportMarkdown(); setExportMenuOpen(false); }} style={{ display: "block", width: "100%", padding: "9px 18px", background: "none", border: "none", color: "rgba(255,255,255,.7)", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer", textAlign: "left", whiteSpace: "nowrap" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,.06)"} onMouseLeave={e => e.currentTarget.style.background = "none"}>Stiahnuť pre pokračovanie</button>
+                      <button onClick={() => { exportConversation(); setExportMenuOpen(false); }} style={{ display: "block", width: "100%", padding: "9px 18px", background: "none", border: "none", borderBottom: "1px solid rgba(255,255,255,.07)", color: "rgba(255,255,255,.7)", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer", textAlign: "left", whiteSpace: "nowrap" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,.06)"} onMouseLeave={e => e.currentTarget.style.background = "none"}>{_lang === "en" ? "Download PDF" : "Stiahnuť PDF"}</button>
+                      <button onClick={() => { exportMarkdown(); setExportMenuOpen(false); }} style={{ display: "block", width: "100%", padding: "9px 18px", background: "none", border: "none", color: "rgba(255,255,255,.7)", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer", textAlign: "left", whiteSpace: "nowrap" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,.06)"} onMouseLeave={e => e.currentTarget.style.background = "none"}>{_lang === "en" ? "Download for continuation" : "Stiahnuť pre pokračovanie"}</button>
                     </div>
                   )}
                 </div>
