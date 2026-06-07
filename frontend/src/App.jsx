@@ -146,12 +146,21 @@ export default function App() {
   const unexploredExpress = LEVELS.filter(l => l.axis === "express" && !explored[l.key]).map(l => l.name.toLowerCase());
   const unexploredDeny = LEVELS.filter(l => l.axis === "deny" && !explored[l.key]).map(l => l.name.toLowerCase());
 
+  function renderMd(text) {
+    if (!text) return null;
+    return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+      part.startsWith('**') && part.endsWith('**')
+        ? <strong key={i}>{part.slice(2, -2)}</strong>
+        : part
+    );
+  }
+
   function getReflection() {
     if (exploredKeys.length < 2) return null;
-    if (expressCount > 0 && denyCount === 0) return "Tvoja explorácia sa pohybuje v individualistických perspektívach (express-self). Kolektívne perspektívy \u2014 " + unexploredDeny.join(", ") + " \u2014 ponúkajú iný druh orientácie, cenný keď individuálny prístup naráža na limity.";
-    if (denyCount > 0 && expressCount === 0) return "Tvoja explorácia sa pohybuje v kolektívnych perspektívach (deny-self). Individualistické perspektívy \u2014 " + unexploredExpress.join(", ") + " \u2014 ponúkajú pohľad na osobnú silu a autonómiu.";
-    if (expressCount >= 2 && denyCount <= 1 && unexploredDeny.length > 0) return "Väčšina explorácie smeruje k individualistickým perspektívam. Nepreskúmané kolektívne pohľady \u2014 " + unexploredDeny.join(", ") + " \u2014 môžu ponúknuť niečo, čo individuálna optika nevidí.";
-    if (denyCount >= 2 && expressCount <= 1 && unexploredExpress.length > 0) return "Väčšina explorácie smeruje ku kolektívnym perspektívam. Nepreskúmané individualistické pohľady \u2014 " + unexploredExpress.join(", ") + " \u2014 môžu ponúknuť niečo, čo skupinová optika nevidí.";
+    if (expressCount > 0 && denyCount === 0) return _lang === "en" ? "Your exploration moves through individualistic (express-self) perspectives. Collective perspectives — " + unexploredDeny.join(", ") + " — offer a different kind of orientation, valuable when the individual approach meets its limits." : "Tvoja explorácia sa pohybuje v individualistických perspektívach (express-self). Kolektívne perspektívy — " + unexploredDeny.join(", ") + " — ponúkajú iný druh orientácie, cenný keď individuálny prístup naráža na limity.";
+    if (denyCount > 0 && expressCount === 0) return _lang === "en" ? "Your exploration moves through collective (other-oriented) perspectives. Individualistic perspectives — " + unexploredExpress.join(", ") + " — offer a view of personal strength and autonomy." : "Tvoja explorácia sa pohybuje v kolektívnych perspektívach (deny-self). Individualistické perspektívy — " + unexploredExpress.join(", ") + " — ponúkajú pohľad na osobnú silu a autonómiu.";
+    if (expressCount >= 2 && denyCount <= 1 && unexploredDeny.length > 0) return _lang === "en" ? "Most of your exploration leans toward individualistic perspectives. Unexplored collective viewpoints — " + unexploredDeny.join(", ") + " — may offer something the individual lens does not see." : "Väčšina explorácie smeruje k individualistickým perspektívam. Nepreskúmané kolektívne pohľady — " + unexploredDeny.join(", ") + " — môžu ponúknuť niečo, čo individuálna optika nevidí.";
+    if (denyCount >= 2 && expressCount <= 1 && unexploredExpress.length > 0) return _lang === "en" ? "Most of your exploration leans toward collective perspectives. Unexplored individualistic viewpoints — " + unexploredExpress.join(", ") + " — may offer something the group lens does not see." : "Väčšina explorácie smeruje ku kolektívnym perspektívam. Nepreskúmané individualistické pohľady — " + unexploredExpress.join(", ") + " — môžu ponúknuť niečo, čo skupinová optika nevidí.";
     return null;
   }
   const reflection = getReflection();
@@ -402,7 +411,7 @@ export default function App() {
         body += '</div>';
       });
     }
-    if (conflictResult) body += '<div class="section"><h2>Napätia medzi perspektívami</h2><div class="a">' + esc(conflictResult) + '</div></div>';
+    if (conflictResult) body += '<div class="section"><h2>' + (_lang === "en" ? "Tensions between perspectives" : "Napätia medzi perspektívami") + '</h2><div class="a">' + esc(conflictResult) + '</div></div>';
     if (reflection) body += '<div class="section"><h2>' + (_lang === "en" ? "Exploration pattern" : "Vzorec explorácie") + '</h2><div class="a">' + esc(reflection) + '</div></div>';
     if (mainChat.length > 0) {
       body += '<div class="section"><h2>' + (_lang === "en" ? "Integrative dialogue" : "Integratívny dialóg") + '</h2>';
@@ -897,7 +906,7 @@ export default function App() {
                             ) : m.role === "user" ? (
                               <div key={i} className="mg mu">{m.content}</div>
                             ) : (
-                              <div key={i} className="mg ma">{m.content}</div>
+                              <div key={i} className="mg ma">{renderMd(m.content)}</div>
                             )
                           )}
                           {!chat.elaborated && !isLoading && chat.messages.length > 0 && chat.messages[0].role === "assistant" && (
@@ -928,7 +937,7 @@ export default function App() {
                     </div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "flex-start" }}>
                       <button id="tut-feat-integrate" className="ib" onClick={integrateSelected}>
-                        {"Integrovať " + selectedCount + (selectedCount === 1 ? " perspektívu" : selectedCount < 5 ? " perspektívy" : " perspektív") + " do žltej"}
+                        {_lang === "en" ? ("Integrate " + selectedCount + (selectedCount === 1 ? " perspective" : " perspectives") + " into Yellow") : ("Integrovať " + selectedCount + (selectedCount === 1 ? " perspektívu" : selectedCount < 5 ? " perspektívy" : " perspektív") + " do žltej")}
                       </button>
                       {selectedCount >= 2 && (
                         <button id="tut-feat-conflict" className="ib ib-conflict" onClick={analyzeConflicts} disabled={conflictLoading}>
@@ -941,14 +950,14 @@ export default function App() {
                 {conflictResult && (
                   <div style={{ marginTop: 14, padding: "16px 18px", background: "rgba(10,10,18,.8)", border: "1px solid rgba(248,113,113,.15)", borderRadius: 12, borderLeft: "3px solid rgba(248,113,113,.3)", backdropFilter: "blur(10px)" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                      <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 11, fontWeight: 600, color: "#F87171", letterSpacing: 1.5, textTransform: "uppercase" }}>Napätia medzi perspektívami</span>
+                      <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 11, fontWeight: 600, color: "#F87171", letterSpacing: 1.5, textTransform: "uppercase" }}>{_lang === "en" ? "Tensions between perspectives" : "Napätia medzi perspektívami"}</span>
                       {Object.keys(selected).filter(k => selected[k]).map(k => (
                         <div key={"cax-"+k} onClick={() => scrollToChat(k)} style={{ width: 30, height: 30, borderRadius: 7, background: LEVEL_MAP[k]?.clr + "18", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "transform .2s" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.15)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} title={"Prejsť na " + LEVEL_MAP[k]?.name}>
                           <AxisIco k={k} size={24} />
                         </div>
                       ))}
                     </div>
-                    <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 14, fontWeight: 300, lineHeight: 1.8, color: "rgba(221,221,221,.85)", whiteSpace: "pre-line" }}>{conflictResult}</div>
+                    <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 14, fontWeight: 300, lineHeight: 1.8, color: "rgba(221,221,221,.85)", whiteSpace: "pre-line" }}>{renderMd(conflictResult)}</div>
                     {conflictLoading && <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0" }}><div className="ldb" style={{ color: "#F87171" }} /><span className="lt">{_lang === "en" ? "Analyzing..." : "Analyzujem..."}</span></div>}
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
                       <button onClick={elaborateConflicts} disabled={conflictLoading} style={{ padding: "5px 14px", background: "rgba(248,113,113,.08)", border: "1px solid rgba(248,113,113,.2)", borderRadius: 7, color: "#F87171", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer", transition: "all .2s", letterSpacing: ".5px" }}>{_lang === "en" ? "Expand tensions" : "Rozvinúť napätia"}</button>
@@ -973,7 +982,7 @@ export default function App() {
                 </div>
               )}
               {mainChat.length > 0 && <div style={{ marginBottom: 14 }}>
-                {mainChat.map((m, i) => <div key={i} className={"mg " + (m.role === "user" ? "mu" : "ma")} style={m.role === "user" ? { borderLeftColor: "rgba(250,204,21,.25)" } : {}}>{m.content}</div>)}
+                {mainChat.map((m, i) => <div key={i} className={"mg " + (m.role === "user" ? "mu" : "ma")} style={m.role === "user" ? { borderLeftColor: "rgba(250,204,21,.25)" } : {}}>{m.role === "user" ? m.content : renderMd(m.content)}</div>)}
                 {mainLoading && <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0" }}><div className="ldb" style={{ color: "#FACC15" }} /><span className="lt">{_lang === "en" ? "Integrating perspectives..." : "Integrujem perspektívy..."}</span></div>}
                 <div ref={mainEndRef} />
               </div>}
