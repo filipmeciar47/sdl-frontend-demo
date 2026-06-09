@@ -826,6 +826,19 @@ export default function App() {
             )}
             </div>
 
+            {pendingLevels.size > 0 && (
+              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 6, flexWrap: "wrap", marginTop: 10, marginBottom: 2 }}>
+                {Array.from(pendingLevels).map(k => {
+                  const lv = LEVEL_MAP[k];
+                  return lv ? (
+                    <div key={"pend-pre-"+k} style={{ width: 36, height: 36, borderRadius: 9, background: lv.clr + "18", border: "1.5px dashed " + lv.clr + "70", display: "flex", alignItems: "center", justifyContent: "center" }} title={lv.name}>
+                      <AxisIco k={k} size={28} />
+                    </div>
+                  ) : null;
+                })}
+              </div>
+            )}
+
             <div id="tut-mode-toggle" className="toggle-wrap">
               <span style={{ opacity: integrated ? .4 : 1 }}>{_lang === "en" ? "Single level" : "Jednotlivá úroveň"}</span>
               <div className={"toggle" + (integrated ? " on" : "")} onClick={() => setIntegrated(!integrated)}>
@@ -836,45 +849,10 @@ export default function App() {
             <div className="hint">{_lang === "en" ? (integrated ? "Click to select a layer + inner ones, then run analysis" : "Click a level, then click Run analysis") : (integrated ? "Kliknutím zvolíte vrstvu + vnútorňé, potom spustíte analýzu" : "Kliknutím zvolíte úroveň, potom kliknite Spustiť analýzu")}</div>
 
             {pendingLevels.size > 0 && (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, marginTop: 12 }}>
+              <div style={{ display: "flex", justifyContent: "center", marginTop: 10 }}>
                 <button id="tut-run-analysis" onClick={runAnalysis} style={{ padding: "6px 18px", borderRadius: 99, border: "1px solid rgba(250,204,21,0.45)", background: "rgba(250,204,21,0.12)", color: "#FACC15", fontFamily: "'DM Sans',sans-serif", fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", cursor: "pointer" }}>
                   {_lang === "en" ? "Run analysis" : "Spustiť analýzu"}
                 </button>
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                  {Array.from(pendingLevels).map(k => {
-                    const lv = LEVEL_MAP[k];
-                    return lv ? (
-                      <div key={"pend-"+k} style={{ width: 34, height: 34, borderRadius: 8, background: lv.clr + "20", border: "1.5px dashed " + lv.clr + "80", display: "flex", alignItems: "center", justifyContent: "center" }} title={lv.name}>
-                        <Ico k={k} size={26} />
-                      </div>
-                    ) : null;
-                  })}
-                </div>
-              </div>
-            )}
-
-            {openChatKeys.length > 0 && (
-              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
-                {integrated ? (() => {
-                  const sorted = [...openChatKeys].sort((a, b) => (LEVEL_MAP[b]?.r1 || 0) - (LEVEL_MAP[a]?.r1 || 0));
-                  const highest = sorted[0];
-                  const rest = sorted.slice(1);
-                  return (<>
-                    <div onClick={() => scrollToChat(highest)} style={{ width: 40, height: 40, borderRadius: 10, background: LEVEL_MAP[highest]?.clr + "20", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "transform .2s", border: "1px solid " + LEVEL_MAP[highest]?.clr + "30" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.1)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} title={LEVEL_MAP[highest]?.name}>
-                      <Ico k={highest} size={32} />
-                    </div>
-                    {rest.length > 0 && <span style={{ color: "#555", fontSize: 11, fontFamily: "'DM Sans',sans-serif" }}>+</span>}
-                    {rest.map(k => (
-                      <div key={"ind-"+k} onClick={() => scrollToChat(k)} style={{ width: 32, height: 32, borderRadius: 8, background: LEVEL_MAP[k]?.clr + "15", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "transform .2s" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} title={LEVEL_MAP[k]?.name}>
-                        <AxisIco k={k} size={24} />
-                      </div>
-                    ))}
-                  </>);
-                })() : openChatKeys.map(k => (
-                  <div key={"ind-"+k} onClick={() => scrollToChat(k)} style={{ width: 36, height: 36, borderRadius: 9, background: LEVEL_MAP[k]?.clr + "18", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "transform .2s", border: "1px solid " + LEVEL_MAP[k]?.clr + "25" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} title={LEVEL_MAP[k]?.name}>
-                    <AxisIco k={k} size={28} />
-                  </div>
-                ))}
               </div>
             )}
 
@@ -953,9 +931,18 @@ export default function App() {
                       <div className="crsl-dots-row">
                         {openChatKeys.map((k, i) => {
                           const isAct = i === safeActiveIdx;
+                          const lv = LEVEL_MAP[k];
                           return (
-                            <div key={k} onClick={() => setActiveCardIdx(i)} title={LEVEL_MAP[k]?.name} style={{ display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all .3s", opacity: isAct ? 1 : 0.38, transform: isAct ? "scale(1)" : "scale(0.72)", flexShrink: 0 }}>
-                              <Ico k={k} size={34} />
+                            <div key={k} onClick={() => setActiveCardIdx(i)} title={lv?.name}
+                              onMouseEnter={e => e.currentTarget.style.transform = isAct ? "scale(1.08)" : "scale(1.15)"}
+                              onMouseLeave={e => e.currentTarget.style.transform = isAct ? "scale(1)" : "scale(0.85)"}
+                              style={{ width: isAct ? 42 : 32, height: isAct ? 42 : 32, borderRadius: isAct ? 11 : 8,
+                                background: lv?.clr + (isAct ? "25" : "15"),
+                                border: "1px solid " + lv?.clr + (isAct ? "50" : "22"),
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                cursor: "pointer", transition: "all .3s", flexShrink: 0,
+                                opacity: isAct ? 1 : 0.5 }}>
+                              <AxisIco k={k} size={isAct ? 32 : 22} />
                             </div>
                           );
                         })}
