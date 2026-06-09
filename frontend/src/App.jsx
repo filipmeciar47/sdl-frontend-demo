@@ -129,13 +129,13 @@ export default function App() {
   const chatInputRefs = useRef({});
   const importFileRef = useRef(null);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
+  const [activeCardIdx, setActiveCardIdx] = useState(0);
 
   function scrollToChat(key) {
+    const idx = Object.keys(colorChats).indexOf(key);
+    if (idx >= 0) setActiveCardIdx(idx);
     const el = chatInputRefs.current[key];
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-      setTimeout(() => el.focus(), 400);
-    }
+    if (el) setTimeout(() => el.focus(), 400);
   }
 
   useEffect(() => { mainEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [mainChat]);
@@ -392,6 +392,7 @@ export default function App() {
 
   const selectedCount = Object.keys(selected).filter(k => selected[k]).length;
   const openChatKeys = Object.keys(colorChats);
+  const safeActiveIdx = openChatKeys.length > 0 ? Math.min(activeCardIdx, openChatKeys.length - 1) : 0;
 
   function exportConversation() {
     const timestamp = new Date().toLocaleString(_lang === "en" ? "en-US" : "sk-SK");
@@ -610,6 +611,17 @@ export default function App() {
         .toggle.on .toggle-dot{left:23px;background:#FACC15}
         .topic-bar{font-family:'Playfair Display',serif;font-size:18px;font-weight:400;color:#ccc;text-align:center;margin-bottom:24px;font-style:italic}
         .hint{font-family:'DM Sans',sans-serif;font-size:11px;color:#777;text-align:center;margin-top:6px}
+        .crsl-wrap{position:relative;overflow:visible;perspective:1100px;perspective-origin:50% 40%;min-height:370px;margin-bottom:4px}
+        .crsl-card{position:absolute;top:0;left:0;right:0;transition:transform .48s cubic-bezier(.25,.46,.45,.94),opacity .48s,filter .48s;transform-origin:50% 50%;will-change:transform}
+        .crsl-card.is-side{cursor:pointer}
+        .crsl-card.is-side:hover{filter:brightness(1.08)!important}
+        .crsl-nav{display:flex;justify-content:space-between;align-items:flex-start;padding:0 2px;margin-top:-2px;min-height:28px}
+        .crsl-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:99px;color:rgba(255,255,255,.45);font-family:'DM Sans',sans-serif;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .2s;flex-shrink:0}
+        .crsl-btn:hover:not(:disabled){background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.25)}
+        .crsl-btn:disabled{opacity:.2;cursor:not-allowed}
+        .crsl-dots{display:flex;flex-direction:column;align-items:center;gap:5px;max-width:220px}
+        .crsl-dots-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center}
+        .crsl-dot-lbl{font-family:'DM Sans',sans-serif;font-size:9px;font-weight:400;color:rgba(255,255,255,.28);letter-spacing:.8px;text-transform:uppercase;transition:color .3s}
         @media(max-width:520px){
           .wrap{padding:20px 14px 80px}
           .sub{font-size:10px;letter-spacing:1.8px;margin-bottom:20px}
@@ -866,66 +878,86 @@ export default function App() {
 
             {openChatKeys.length > 0 && (
               <div style={{ marginTop: 28 }}>
-                {openChatKeys.map(key => {
-                  const l = LEVEL_MAP[key]; const chat = colorChats[key];
-                  const isLoading = colorLoading[key]; const isSel = !!selected[key];
-                  const levelIdx = LEVELS.findIndex(lv => lv.key === key);
-                  const prevClr = levelIdx > 0 ? LEVELS[levelIdx - 1].clr : null;
-                  const nextClr = levelIdx < LEVELS.length - 1 ? LEVELS[levelIdx + 1].clr : null;
-                  return (
-                    <div key={key} style={{ display: "flex", marginBottom: 12 }}>
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 24, flexShrink: 0, paddingLeft: 6 }}>
-                        <div style={{ width: 8, height: 8, borderRadius: "50%", background: l.clr, opacity: .7, flexShrink: 0 }} />
-                        <div style={{ width: 2, flexGrow: 1, background: "linear-gradient(to bottom, " + l.clr + "70, " + l.clr + "15)", borderRadius: 1, minHeight: 16 }} />
-                      </div>
-                      <div className="cp" style={{ background: "linear-gradient(135deg, " + l.bg + "e0, rgba(10,10,18,.85))", border: "1px solid " + l.clr + (isSel ? "50" : "25"), borderLeft: "3px solid " + l.clr + "50", flexGrow: 1 }}>
-                        <div className="ch">
-                          <input type="checkbox" className="chk" id={key === openChatKeys[0] ? "tut-feat-checkbox" : undefined} checked={isSel} onChange={() => toggleSelect(key)} title="Vybrať pre integráciu" style={{ accentColor: l.clr }} />
-                          <Ico k={key} size={33} />
-                          <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase", color: l.clr }}>{l.name}</span>
-                          <button className="cx" onClick={() => closeCC(key)}>{"✕"}</button>
-                        </div>
-                        <div className="cm">
-                          <div id={key === openChatKeys[0] ? "tut-feat-axis" : undefined} style={{ float: "right", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, marginLeft: 12, marginBottom: 8 }}>
-                            {l.axis === "deny" && (
-                              <AxisIco k={key} size={46} />
-                            )}
-                            <div style={{ width: 70, height: 70, borderRadius: 12, background: l.clr + "15", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                              <Ico k={key} size={58} />
-                            </div>
-                            {l.axis === "express" && (
-                              <AxisIco k={key} size={46} />
-                            )}
+                <div className="crsl-wrap">
+                  {openChatKeys.map((key, idx) => {
+                    const offset = idx - safeActiveIdx;
+                    const isActive = offset === 0;
+                    const l = LEVEL_MAP[key]; const chat = colorChats[key];
+                    const isLoading = colorLoading[key]; const isSel = !!selected[key];
+                    const levelIdx = LEVELS.findIndex(lv => lv.key === key);
+                    const prevClr = levelIdx > 0 ? LEVELS[levelIdx - 1].clr : null;
+                    const nextClr = levelIdx < LEVELS.length - 1 ? LEVELS[levelIdx + 1].clr : null;
+                    let transform, zIdx, opacity, flt;
+                    if (offset === 0) { transform = "translateX(0) scale(1) rotateY(0deg)"; zIdx = 3; opacity = 1; flt = "none"; }
+                    else if (offset === -1) { transform = "translateX(-60%) scale(0.74) rotateY(22deg)"; zIdx = 2; opacity = 0.82; flt = "none"; }
+                    else if (offset === 1) { transform = "translateX(60%) scale(0.74) rotateY(-22deg)"; zIdx = 2; opacity = 0.82; flt = "none"; }
+                    else if (offset < -1) { transform = "translateX(-88%) scale(0.48) rotateY(38deg)"; zIdx = 1; opacity = 0; flt = "blur(2px)"; }
+                    else { transform = "translateX(88%) scale(0.48) rotateY(-38deg)"; zIdx = 1; opacity = 0; flt = "blur(2px)"; }
+                    return (
+                      <div key={key} className={"crsl-card" + (!isActive ? " is-side" : "")} onClick={!isActive ? () => setActiveCardIdx(idx) : undefined} style={{ transform, zIndex: zIdx, opacity, filter: flt, pointerEvents: Math.abs(offset) > 1 ? "none" : "auto" }}>
+                        <div style={{ display: "flex" }}>
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 24, flexShrink: 0, paddingLeft: 6 }}>
+                            <div style={{ width: 8, height: 8, borderRadius: "50%", background: l.clr, opacity: .7, flexShrink: 0 }} />
+                            <div style={{ width: 2, flexGrow: 1, background: "linear-gradient(to bottom, " + l.clr + "70, " + l.clr + "15)", borderRadius: 1, minHeight: 16 }} />
                           </div>
-                          {chat.messages.map((m, i) => 
-                            m.role === "error" ? (
-                              <div key={i} style={{ padding: "10px 14px", background: "rgba(248,113,113,.06)", border: "1px solid rgba(248,113,113,.15)", borderRadius: 8, marginBottom: 12 }}>
-                                <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13, color: "#F87171", marginBottom: 8 }}>{m.content}</div>
-                                <button onClick={() => retryChat(key)} style={{ padding: "5px 14px", background: "rgba(248,113,113,.1)", border: "1px solid rgba(248,113,113,.2)", borderRadius: 6, color: "#F87171", fontFamily: "'DM Sans',sans-serif", fontSize: 12, cursor: "pointer" }}>{_lang === "en" ? "Try again" : "Skúsiť znova"}</button>
-                              </div>
-                            ) : m.role === "user" ? (
-                              <div key={i} className="mg mu">{m.content}</div>
-                            ) : (
-                              <div key={i} className="mg ma">{renderMd(m.content)}</div>
-                            )
-                          )}
-                          {!chat.elaborated && !isLoading && chat.messages.length > 0 && chat.messages[0].role === "assistant" && (
-                            <div id={key === openChatKeys[0] ? "tut-feat-actions" : undefined} style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
-                              <button onClick={() => elaborateChat(key)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", background: l.clr + "0a", border: "1px solid " + l.clr + "25", borderRadius: 7, color: l.clr + "90", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer", transition: "all .2s", letterSpacing: ".5px" }}>{_lang === "en" ? "Expand perspective" : "Rozvinúť perspektívu"}</button>
-                              <button onClick={() => showEmergence(key)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", background: prevClr ? prevClr + "0a" : "rgba(255,255,255,.03)", border: "1px solid " + (prevClr ? prevClr + "35" : "rgba(255,255,255,.1)"), borderRadius: 7, color: l.clr + "90", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer", transition: "all .2s", letterSpacing: ".5px" }}>{_lang === "en" ? "How this perspective emerged" : "Ako vznikla táto perspektíva"}</button>
-                              <button onClick={() => showGrowthDirection(key)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", background: nextClr ? nextClr + "0a" : "rgba(255,255,255,.03)", border: "1px solid " + (nextClr ? nextClr + "35" : "rgba(255,255,255,.1)"), borderRadius: 7, color: l.clr + "90", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer", transition: "all .2s", letterSpacing: ".5px" }}>{_lang === "en" ? "Where this perspective leads" : "Kam táto perspektíva smeruje"}</button>
+                          <div className="cp" style={{ background: "linear-gradient(135deg, " + l.bg + "e0, rgba(10,10,18,.85))", border: "1px solid " + l.clr + (isSel ? "50" : "25"), borderLeft: "3px solid " + l.clr + "50", flexGrow: 1 }}>
+                            <div className="ch">
+                              <input type="checkbox" className="chk" id={key === openChatKeys[0] ? "tut-feat-checkbox" : undefined} checked={isSel} onChange={() => toggleSelect(key)} title={_lang === "en" ? "Select for integration" : "Vybrať pre integráciu"} style={{ accentColor: l.clr }} />
+                              <Ico k={key} size={33} />
+                              <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase", color: l.clr }}>{l.name}</span>
+                              <button className="cx" onClick={() => closeCC(key)}>{"✕"}</button>
                             </div>
-                          )}
-                          {isLoading && <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0" }}><div className="ldb" style={{ color: l.clr }} /><span className="lt">{_lang === "en" ? "Thinking..." : "Premýšľam..."}</span></div>}
-                        </div>
-                        <div className="cr">
-                          <input ref={el => { chatInputRefs.current[key] = el; }} className="ci" value={chat.input} onChange={e => setCCInput(key, e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); sendCC(key); }}} placeholder={_lang === "en" ? ("Ask from the " + l.name.toLowerCase() + " perspective...") : ("Opýtaj sa z pohľadu " + l.name.toLowerCase() + "...")} disabled={isLoading} style={{ borderColor: l.clr + "20" }} />
-                          <button className="sb" onClick={() => sendCC(key)} disabled={isLoading || !chat.input.trim()} style={{ background: l.clr + "18", color: l.clr, border: "1px solid " + l.clr + "30" }}>{_lang === "en" ? "Send" : "Odoslať"}</button>
+                            <div className="cm">
+                              <div id={key === openChatKeys[0] ? "tut-feat-axis" : undefined} style={{ float: "right", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, marginLeft: 12, marginBottom: 8 }}>
+                                {l.axis === "deny" && (<AxisIco k={key} size={46} />)}
+                                <div style={{ width: 70, height: 70, borderRadius: 12, background: l.clr + "15", display: "flex", alignItems: "center", justifyContent: "center" }}><Ico k={key} size={58} /></div>
+                                {l.axis === "express" && (<AxisIco k={key} size={46} />)}
+                              </div>
+                              {chat.messages.map((m, i) =>
+                                m.role === "error" ? (
+                                  <div key={i} style={{ padding: "10px 14px", background: "rgba(248,113,113,.06)", border: "1px solid rgba(248,113,113,.15)", borderRadius: 8, marginBottom: 12 }}>
+                                    <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13, color: "#F87171", marginBottom: 8 }}>{m.content}</div>
+                                    <button onClick={() => retryChat(key)} style={{ padding: "5px 14px", background: "rgba(248,113,113,.1)", border: "1px solid rgba(248,113,113,.2)", borderRadius: 6, color: "#F87171", fontFamily: "'DM Sans',sans-serif", fontSize: 12, cursor: "pointer" }}>{_lang === "en" ? "Try again" : "Skúsiť znova"}</button>
+                                  </div>
+                                ) : m.role === "user" ? (
+                                  <div key={i} className="mg mu">{m.content}</div>
+                                ) : (
+                                  <div key={i} className="mg ma">{renderMd(m.content)}</div>
+                                )
+                              )}
+                              {!chat.elaborated && !isLoading && chat.messages.length > 0 && chat.messages[0].role === "assistant" && (
+                                <div id={key === openChatKeys[0] ? "tut-feat-actions" : undefined} style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+                                  <button onClick={() => elaborateChat(key)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", background: l.clr + "0a", border: "1px solid " + l.clr + "25", borderRadius: 7, color: l.clr + "90", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer", transition: "all .2s", letterSpacing: ".5px" }}>{_lang === "en" ? "Expand perspective" : "Rozvinúť perspektívu"}</button>
+                                  <button onClick={() => showEmergence(key)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", background: prevClr ? prevClr + "0a" : "rgba(255,255,255,.03)", border: "1px solid " + (prevClr ? prevClr + "35" : "rgba(255,255,255,.1)"), borderRadius: 7, color: l.clr + "90", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer", transition: "all .2s", letterSpacing: ".5px" }}>{_lang === "en" ? "How this perspective emerged" : "Ako vznikla táto perspektíva"}</button>
+                                  <button onClick={() => showGrowthDirection(key)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", background: nextClr ? nextClr + "0a" : "rgba(255,255,255,.03)", border: "1px solid " + (nextClr ? nextClr + "35" : "rgba(255,255,255,.1)"), borderRadius: 7, color: l.clr + "90", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer", transition: "all .2s", letterSpacing: ".5px" }}>{_lang === "en" ? "Where this perspective leads" : "Kam táto perspektíva smeruje"}</button>
+                                </div>
+                              )}
+                              {isLoading && <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0" }}><div className="ldb" style={{ color: l.clr }} /><span className="lt">{_lang === "en" ? "Thinking..." : "Premýšľam..."}</span></div>}
+                            </div>
+                            <div className="cr">
+                              <input ref={el => { chatInputRefs.current[key] = el; }} className="ci" value={chat.input} onChange={e => setCCInput(key, e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); sendCC(key); }}} placeholder={_lang === "en" ? ("Ask from the " + l.name.toLowerCase() + " perspective...") : ("Opýtaj sa z pohľadu " + l.name.toLowerCase() + "...")} disabled={isLoading || !isActive} style={{ borderColor: l.clr + "20" }} />
+                              <button className="sb" onClick={() => sendCC(key)} disabled={isLoading || !chat.input.trim() || !isActive} style={{ background: l.clr + "18", color: l.clr, border: "1px solid " + l.clr + "30" }}>{_lang === "en" ? "Send" : "Odoslať"}</button>
+                            </div>
+                          </div>
                         </div>
                       </div>
+                    );
+                  })}
+                </div>
+                {openChatKeys.length > 1 && (
+                  <div className="crsl-nav">
+                    <button className="crsl-btn" onClick={() => setActiveCardIdx(i => Math.max(0, i - 1))} disabled={safeActiveIdx === 0}>{_lang === "en" ? "← Prev." : "← Predch."}</button>
+                    <div className="crsl-dots">
+                      <div className="crsl-dots-row">
+                        {openChatKeys.map((k, i) => (
+                          <div key={k} onClick={() => setActiveCardIdx(i)} title={LEVEL_MAP[k]?.name} style={{ width: i === safeActiveIdx ? 22 : 8, height: 8, borderRadius: 99, background: i === safeActiveIdx ? LEVEL_MAP[k]?.clr + "cc" : "rgba(255,255,255,.18)", cursor: "pointer", transition: "all .3s", flexShrink: 0 }} />
+                        ))}
+                      </div>
+                      <span className="crsl-dot-lbl" style={{ color: LEVEL_MAP[openChatKeys[safeActiveIdx]]?.clr + "99" }}>{LEVEL_MAP[openChatKeys[safeActiveIdx]]?.name}</span>
                     </div>
-                  );
-                })}
+                    <button className="crsl-btn" onClick={() => setActiveCardIdx(i => Math.min(openChatKeys.length - 1, i + 1))} disabled={safeActiveIdx === openChatKeys.length - 1}>{_lang === "en" ? "Next →" : "Nasl. →"}</button>
+                  </div>
+                )}
                 {selectedCount > 0 && (
                   <div style={{ marginTop: 12 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
