@@ -836,18 +836,20 @@ export default function App() {
             <div className="hint">{_lang === "en" ? (integrated ? "Click to select a layer + inner ones, then run analysis" : "Click a level, then click Run analysis") : (integrated ? "Kliknutím zvolíte vrstvu + vnútorňé, potom spustíte analýzu" : "Kliknutím zvolíte úroveň, potom kliknite Spustiť analýzu")}</div>
 
             {pendingLevels.size > 0 && (
-              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
-                {Array.from(pendingLevels).map(k => {
-                  const lv = LEVEL_MAP[k];
-                  return lv ? (
-                    <div key={"pend-"+k} style={{ width: 32, height: 32, borderRadius: 8, background: lv.clr + "20", border: "1.5px dashed " + lv.clr + "80", display: "flex", alignItems: "center", justifyContent: "center" }} title={lv.name}>
-                      <Ico k={k} size={24} />
-                    </div>
-                  ) : null;
-                })}
-                <button id="tut-run-analysis" onClick={runAnalysis} style={{ marginLeft: 8, padding: "6px 18px", borderRadius: 99, border: "1px solid rgba(250,204,21,0.45)", background: "rgba(250,204,21,0.12)", color: "#FACC15", fontFamily: "'DM Sans',sans-serif", fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", cursor: "pointer" }}>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, marginTop: 12 }}>
+                <button id="tut-run-analysis" onClick={runAnalysis} style={{ padding: "6px 18px", borderRadius: 99, border: "1px solid rgba(250,204,21,0.45)", background: "rgba(250,204,21,0.12)", color: "#FACC15", fontFamily: "'DM Sans',sans-serif", fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", cursor: "pointer" }}>
                   {_lang === "en" ? "Run analysis" : "Spustiť analýzu"}
                 </button>
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                  {Array.from(pendingLevels).map(k => {
+                    const lv = LEVEL_MAP[k];
+                    return lv ? (
+                      <div key={"pend-"+k} style={{ width: 34, height: 34, borderRadius: 8, background: lv.clr + "20", border: "1.5px dashed " + lv.clr + "80", display: "flex", alignItems: "center", justifyContent: "center" }} title={lv.name}>
+                        <Ico k={k} size={26} />
+                      </div>
+                    ) : null;
+                  })}
+                </div>
               </div>
             )}
 
@@ -949,9 +951,14 @@ export default function App() {
                     <button className="crsl-btn" onClick={() => setActiveCardIdx(i => Math.max(0, i - 1))} disabled={safeActiveIdx === 0}>{_lang === "en" ? "← Prev." : "← Predch."}</button>
                     <div className="crsl-dots">
                       <div className="crsl-dots-row">
-                        {openChatKeys.map((k, i) => (
-                          <div key={k} onClick={() => setActiveCardIdx(i)} title={LEVEL_MAP[k]?.name} style={{ width: i === safeActiveIdx ? 22 : 8, height: 8, borderRadius: 99, background: i === safeActiveIdx ? LEVEL_MAP[k]?.clr + "cc" : "rgba(255,255,255,.18)", cursor: "pointer", transition: "all .3s", flexShrink: 0 }} />
-                        ))}
+                        {openChatKeys.map((k, i) => {
+                          const isAct = i === safeActiveIdx;
+                          return (
+                            <div key={k} onClick={() => setActiveCardIdx(i)} title={LEVEL_MAP[k]?.name} style={{ display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all .3s", opacity: isAct ? 1 : 0.38, transform: isAct ? "scale(1)" : "scale(0.72)", flexShrink: 0 }}>
+                              <Ico k={k} size={34} />
+                            </div>
+                          );
+                        })}
                       </div>
                       <span className="crsl-dot-lbl" style={{ color: LEVEL_MAP[openChatKeys[safeActiveIdx]]?.clr + "99" }}>{LEVEL_MAP[openChatKeys[safeActiveIdx]]?.name}</span>
                     </div>
