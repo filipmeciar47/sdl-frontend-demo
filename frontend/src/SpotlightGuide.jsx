@@ -176,8 +176,8 @@ export function GuideOverlay({ guide }) {
   const { step, rect, steps, activeStep, next, skip } = guide;
   if (step <= 0 || !rect || !activeStep) return null;
 
-  const pad = 10;
-  const ttWidth = 340;
+  const pad = 7;
+  const ttWidth = Math.min(270, window.innerWidth - 32);
   const ttLeft = Math.max(16, Math.min(rect.left + rect.width / 2 - ttWidth / 2, window.innerWidth - ttWidth - 16));
   const isBelow = activeStep.pos === "bottom";
   const hasNext = guideHasNext(steps, step);
@@ -185,15 +185,16 @@ export function GuideOverlay({ guide }) {
   return (
     <>
       <div onClick={skip}
-        style={{ position: "fixed", inset: 0, zIndex: 9998, background: "rgba(0,0,0,.25)" }} />
+        style={{ position: "fixed", inset: 0, zIndex: 9998, background: "rgba(0,0,0,.38)" }} />
       <div style={{ position: "fixed", top: rect.top - pad, left: rect.left - pad,
         width: rect.width + pad * 2, height: rect.height + pad * 2, zIndex: 9999, borderRadius: 14,
         animation: "spotlightGuidePulse 2s ease-in-out infinite", pointerEvents: "none" }} />
-      <div style={{ position: "fixed", zIndex: 10000, left: ttLeft, width: ttWidth, padding: "18px 22px",
-        background: "rgba(10,10,18,.96)", border: "1px solid rgba(250,204,21,.3)", borderRadius: 14,
-        backdropFilter: "blur(16px)", animation: "spotlightGuideFadeIn .35s ease-out",
-        ...(isBelow ? { top: Math.min(rect.top + rect.height + 20, window.innerHeight - 200) }
-                    : { top: Math.max(10, rect.top - 180) }) }}>
+      <div style={{ position: "fixed", zIndex: 10000, left: ttLeft, width: ttWidth, padding: "14px 18px",
+        background: "rgba(8,8,16,.98)", border: "1px solid rgba(250,204,21,.45)", borderRadius: 14,
+        backdropFilter: "blur(20px)", boxShadow: "0 16px 48px rgba(0,0,0,.75)",
+        animation: "spotlightGuideFadeIn .35s ease-out",
+        ...(isBelow ? { top: Math.min(rect.top + rect.height + pad + 20, window.innerHeight - 210) }
+                    : { top: Math.max(10, rect.top - 215) }) }}>
         <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 14, lineHeight: 1.7, marginBottom: 14 }}>
           <span style={{ fontWeight: 600, color: "rgba(250,204,21,.95)" }}>{activeStep.bold} </span>
           <span style={{ fontWeight: 300, color: "rgba(240,240,240,.85)" }}>{activeStep.text}</span>
