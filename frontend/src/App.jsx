@@ -637,7 +637,7 @@ export default function App() {
       `}</style>
       <div className="bg" />
       <div className="wrap">
-        <div style={{ textAlign: "center", marginBottom: 0 }}><img src={TITLE_IMG} alt="Spiral Dynamics Lens" style={{ width: "min(380px, 70vw)", height: "auto", display: "block", margin: "0 auto" }} /></div>
+        <div style={{ textAlign: "center", marginBottom: 0 }}><img src={TITLE_IMG} alt="Spiral Dynamics Lens" style={{ width: "min(228px, 42vw)", height: "auto", display: "block", margin: "0 auto" }} /></div>
         <p className="sub">{_lang === "en" ? "Multi-level view of reality" : "Viacúrovňový pohľad na realitu"}</p>
 
         {!topicSet ? (
