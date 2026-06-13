@@ -637,7 +637,15 @@ export default function App() {
       `}</style>
       <div className="bg" />
       <div className="wrap">
-        <div style={{ textAlign: "center", marginBottom: 0 }}><img src={TITLE_IMG} alt="Spiral Dynamics Lens" style={{ width: "min(228px, 42vw)", height: "auto", display: "block", margin: "0 auto" }} /></div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 0 }}>
+          <img src={TITLE_IMG} alt="Spiral Dynamics Lens" style={{ width: "min(228px, 42vw)", height: "auto", display: "block" }} />
+          <button onClick={() => { const u = new URL(window.location.href); u.searchParams.set("lang", _lang === "en" ? "sk" : "en"); window.location.href = u.toString(); }}
+            style={{ marginLeft: 10, background: "none", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 3, padding: "3px 7px", color: "rgba(255,255,255,0.28)", fontFamily: "DM Sans,sans-serif", fontSize: 8, letterSpacing: "0.12em", textTransform: "uppercase", cursor: "pointer", transition: "color 0.2s, border-color 0.2s", flexShrink: 0, alignSelf: "flex-end", marginBottom: 4 }}
+            onMouseEnter={e => { e.currentTarget.style.color = "rgba(255,255,255,0.6)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
+            onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.28)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; }}>
+            {_lang === "en" ? "SK" : "EN"}
+          </button>
+        </div>
         <p className="sub">{_lang === "en" ? "Multi-level view of reality" : "Viacúrovňový pohľad na realitu"}</p>
 
         {!topicSet ? (
@@ -657,7 +665,6 @@ export default function App() {
                 Tutorial
               </button>
               <GuideBtnComp guide={guide} style={{ top: 8, right: 0, zIndex: 100 }} tipSide="right" />
-              <button onClick={() => { const u = new URL(window.location.href); u.searchParams.set("lang", _lang === "en" ? "sk" : "en"); window.location.href = u.toString(); }} style={{ position: "absolute", top: 8, left: "calc(50% + 90px)", zIndex: 100, background: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 4, padding: "4px 8px", color: "rgba(255,255,255,0.55)", fontFamily: "DM Sans,sans-serif", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", cursor: "pointer" }}>{_lang === "en" ? "SK" : "EN"}</button>
             </div>
             <div style={{ position: "relative" }}>
               <textarea id="tut-textarea" value={topic} onChange={e => setTopic(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); startAnalysis(); } }} placeholder={_lang === "en" ? "Enter a topic, problem, question or situation..." : "Zadajte tému, problém, otázku alebo situáciu..."} />
