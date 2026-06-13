@@ -114,7 +114,7 @@ export default function App() {
   const [mainInput, setMainInput] = useState("");
   const [mainLoading, setMainLoading] = useState(false);
   const [integratedContext, setIntegratedContext] = useState("");
-  const [viewMode, setViewMode] = useState("mandala");
+  const [viewMode, setViewMode] = useState(() => window.innerWidth >= 768 ? "icons" : "mandala");
   const [pendingLevels, setPendingLevels] = useState(new Set());
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const guidePhase = !topicSet ? "intro" : Object.keys(colorChats).length === 0 ? "tools" : "features";
