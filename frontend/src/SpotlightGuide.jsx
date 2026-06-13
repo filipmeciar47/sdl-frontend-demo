@@ -145,7 +145,7 @@ export function useSpotlightGuide(phase) {
   }, [step, steps]);
 
   const glow = !seen[phase] && step === 0;
-  const showIntroTip = glow && phase !== "features";
+  const showIntroTip = glow && phase === "intro";
 
   // klik kamkoľvek mimo zhasne žiarenie
   useEffect(() => {
