@@ -637,16 +637,21 @@ export default function App() {
       `}</style>
       <div className="bg" />
       <div className="wrap">
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 0 }}>
-          <img src={TITLE_IMG} alt="Spiral Dynamics Lens" style={{ width: "min(228px, 42vw)", height: "auto", display: "block" }} />
-          <button onClick={() => { const u = new URL(window.location.href); u.searchParams.set("lang", _lang === "en" ? "sk" : "en"); window.location.href = u.toString(); }}
-            style={{ marginLeft: 10, background: "none", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 3, padding: "3px 7px", color: "rgba(255,255,255,0.28)", fontFamily: "DM Sans,sans-serif", fontSize: 8, letterSpacing: "0.12em", textTransform: "uppercase", cursor: "pointer", transition: "color 0.2s, border-color 0.2s", flexShrink: 0, alignSelf: "flex-end", marginBottom: 4 }}
-            onMouseEnter={e => { e.currentTarget.style.color = "rgba(255,255,255,0.6)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
-            onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.28)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; }}>
-            {_lang === "en" ? "SK" : "EN"}
-          </button>
-        </div>
+        <div style={{ textAlign: "center", marginBottom: 0 }}><img src={TITLE_IMG} alt="Spiral Dynamics Lens" style={{ width: "min(228px, 42vw)", height: "auto", display: "block", margin: "0 auto" }} /></div>
         <p className="sub">{_lang === "en" ? "Multi-level view of reality" : "Viacúrovňový pohľad na realitu"}</p>
+        <div style={{ display: "flex", justifyContent: "center", marginTop: 6, marginBottom: 4 }}>
+          <div style={{ display: "inline-flex", borderRadius: 5, border: "1px solid rgba(255,255,255,0.1)", overflow: "hidden" }}>
+            {["sk", "en"].map(l => {
+              const active = _lang === l;
+              return (
+                <button key={l} onClick={() => { if (!active) { const u = new URL(window.location.href); u.searchParams.set("lang", l); window.location.href = u.toString(); } }}
+                  style={{ padding: "3px 10px", background: active ? "rgba(255,255,255,0.1)" : "none", border: "none", borderRight: l === "sk" ? "1px solid rgba(255,255,255,0.1)" : "none", color: active ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.25)", fontFamily: "DM Sans,sans-serif", fontSize: 8, letterSpacing: "0.12em", textTransform: "uppercase", cursor: active ? "default" : "pointer", transition: "all 0.2s", fontWeight: active ? 600 : 400 }}>
+                  {l.toUpperCase()}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {!topicSet ? (
           <div style={{ maxWidth: 600, margin: "0 auto" }}>
