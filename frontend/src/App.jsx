@@ -130,6 +130,8 @@ export default function App() {
   const importFileRef = useRef(null);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const [activeCardIdx, setActiveCardIdx] = useState(0);
+  const [cardLayout, setCardLayout] = useState("carousel");
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   function scrollToChat(key) {
     const idx = Object.keys(colorChats).indexOf(key);
@@ -870,23 +872,25 @@ export default function App() {
 
             {openChatKeys.length > 0 && (
               <div style={{ marginTop: 28 }}>
-                <div className="crsl-wrap">
+                <div className={cardLayout === "carousel" ? "crsl-wrap" : undefined} style={cardLayout === "list" ? { display: "flex", flexDirection: "column", gap: 20 } : undefined}>
                   {openChatKeys.map((key, idx) => {
                     const offset = idx - safeActiveIdx;
-                    const isActive = offset === 0;
+                    const isActive = cardLayout === "list" ? true : offset === 0;
                     const l = LEVEL_MAP[key]; const chat = colorChats[key];
                     const isLoading = colorLoading[key]; const isSel = !!selected[key];
                     const levelIdx = LEVELS.findIndex(lv => lv.key === key);
                     const prevClr = levelIdx > 0 ? LEVELS[levelIdx - 1].clr : null;
                     const nextClr = levelIdx < LEVELS.length - 1 ? LEVELS[levelIdx + 1].clr : null;
                     let transform, zIdx, opacity, flt;
-                    if (offset === 0) { transform = "translateX(0) scale(1) rotateY(0deg)"; zIdx = 3; opacity = 1; flt = "none"; }
-                    else if (offset === -1) { transform = "translateX(-60%) scale(0.74) rotateY(22deg)"; zIdx = 2; opacity = 0.82; flt = "none"; }
-                    else if (offset === 1) { transform = "translateX(60%) scale(0.74) rotateY(-22deg)"; zIdx = 2; opacity = 0.82; flt = "none"; }
-                    else if (offset < -1) { transform = "translateX(-88%) scale(0.48) rotateY(38deg)"; zIdx = 1; opacity = 0; flt = "blur(2px)"; }
-                    else { transform = "translateX(88%) scale(0.48) rotateY(-38deg)"; zIdx = 1; opacity = 0; flt = "blur(2px)"; }
+                    if (cardLayout === "carousel") {
+                      if (offset === 0) { transform = "translateX(0) scale(1) rotateY(0deg)"; zIdx = 3; opacity = 1; flt = "none"; }
+                      else if (offset === -1) { transform = "translateX(-60%) scale(0.74) rotateY(22deg)"; zIdx = 2; opacity = 0.82; flt = "none"; }
+                      else if (offset === 1) { transform = "translateX(60%) scale(0.74) rotateY(-22deg)"; zIdx = 2; opacity = 0.82; flt = "none"; }
+                      else if (offset < -1) { transform = "translateX(-88%) scale(0.48) rotateY(38deg)"; zIdx = 1; opacity = 0; flt = "blur(2px)"; }
+                      else { transform = "translateX(88%) scale(0.48) rotateY(-38deg)"; zIdx = 1; opacity = 0; flt = "blur(2px)"; }
+                    }
                     return (
-                      <div key={key} className={"crsl-card" + (!isActive ? " is-side" : "")} onClick={!isActive ? () => setActiveCardIdx(idx) : undefined} style={{ transform, zIndex: zIdx, opacity, filter: flt, pointerEvents: Math.abs(offset) > 1 ? "none" : "auto" }}>
+                      <div key={key} className={cardLayout === "carousel" ? ("crsl-card" + (!isActive ? " is-side" : "")) : undefined} onClick={cardLayout === "carousel" && !isActive ? () => setActiveCardIdx(idx) : undefined} style={cardLayout === "carousel" ? { transform, zIndex: zIdx, opacity, filter: flt, pointerEvents: Math.abs(offset) > 1 ? "none" : "auto" } : { position: "relative" }}>
                         <div style={{ display: "flex" }}>
                           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 24, flexShrink: 0, paddingLeft: 6 }}>
                             <div style={{ width: 8, height: 8, borderRadius: "50%", background: l.clr, opacity: .7, flexShrink: 0 }} />
@@ -936,7 +940,7 @@ export default function App() {
                     );
                   })}
                 </div>
-                {openChatKeys.length > 1 && (
+                {cardLayout === "carousel" && openChatKeys.length > 1 && (
                   <div className="crsl-nav">
                     <button className="crsl-btn" onClick={() => setActiveCardIdx(i => Math.max(0, i - 1))} disabled={safeActiveIdx === 0}>{_lang === "en" ? "← Prev." : "← Predch."}</button>
                     <div className="crsl-dots">
@@ -1041,6 +1045,32 @@ export default function App() {
                       <button onClick={() => { exportMarkdown(); setExportMenuOpen(false); }} style={{ display: "block", width: "100%", padding: "9px 18px", background: "none", border: "none", color: "rgba(255,255,255,.7)", fontFamily: "'DM Sans',sans-serif", fontSize: 11, cursor: "pointer", textAlign: "left", whiteSpace: "nowrap" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,.06)"} onMouseLeave={e => e.currentTarget.style.background = "none"}>{_lang === "en" ? "Download for continuation" : "Stiahnuť pre pokračovanie"}</button>
                     </div>
                   )}
+                </div>
+              )}
+            </div>
+            <div style={{ marginTop: 18, borderTop: "1px solid rgba(255,255,255,.06)", paddingTop: 14 }}>
+              <button onClick={() => setSettingsOpen(p => !p)} style={{ display: "flex", alignItems: "center", gap: 6, margin: "0 auto", background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,.28)", fontFamily: "'DM Sans',sans-serif", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", padding: "4px 8px", transition: "color .2s" }}
+                onMouseEnter={e => e.currentTarget.style.color = "rgba(255,255,255,.65)"}
+                onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,.28)"}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+                {_lang === "en" ? "Settings" : "Nastavenia"} {settingsOpen ? "▲" : "▼"}
+              </button>
+              {settingsOpen && (
+                <div style={{ marginTop: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 10, color: "rgba(255,255,255,.35)", letterSpacing: ".8px", textTransform: "uppercase" }}>{_lang === "en" ? "Card layout:" : "Rozloženie kariet:"}</span>
+                    <div style={{ display: "inline-flex", borderRadius: 5, border: "1px solid rgba(255,255,255,.1)", overflow: "hidden" }}>
+                      {[["carousel", _lang === "en" ? "Carousel" : "Karusel"], ["list", _lang === "en" ? "List" : "Zoznam"]].map(([val, label]) => {
+                        const active = cardLayout === val;
+                        return (
+                          <button key={val} onClick={() => setCardLayout(val)}
+                            style={{ padding: "4px 12px", background: active ? "rgba(255,255,255,.1)" : "none", border: "none", borderRight: val === "carousel" ? "1px solid rgba(255,255,255,.1)" : "none", color: active ? "rgba(255,255,255,.75)" : "rgba(255,255,255,.25)", fontFamily: "'DM Sans',sans-serif", fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", cursor: active ? "default" : "pointer", transition: "all .2s", fontWeight: active ? 600 : 400 }}>
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
