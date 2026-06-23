@@ -1058,6 +1058,20 @@ export default function App() {
               {settingsOpen && (
                 <div style={{ marginTop: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 10, color: "rgba(255,255,255,.35)", letterSpacing: ".8px", textTransform: "uppercase" }}>{_lang === "en" ? "View:" : "Zobrazenie:"}</span>
+                    <div style={{ display: "inline-flex", borderRadius: 5, border: "1px solid rgba(255,255,255,.1)", overflow: "hidden" }}>
+                      {[["icons", _lang === "en" ? "Icons" : "Ikony"], ["mandala", _lang === "en" ? "Spiral" : "Špiráľa"]].map(([val, label]) => {
+                        const active = viewMode === val;
+                        return (
+                          <button key={val} onClick={() => setViewMode(val)}
+                            style={{ padding: "4px 12px", background: active ? "rgba(255,255,255,.1)" : "none", border: "none", borderRight: val === "icons" ? "1px solid rgba(255,255,255,.1)" : "none", color: active ? "rgba(255,255,255,.75)" : "rgba(255,255,255,.25)", fontFamily: "'DM Sans',sans-serif", fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", cursor: active ? "default" : "pointer", transition: "all .2s", fontWeight: active ? 600 : 400 }}>
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 10, color: "rgba(255,255,255,.35)", letterSpacing: ".8px", textTransform: "uppercase" }}>{_lang === "en" ? "Card layout:" : "Rozloženie kariet:"}</span>
                     <div style={{ display: "inline-flex", borderRadius: 5, border: "1px solid rgba(255,255,255,.1)", overflow: "hidden" }}>
                       {[["carousel", _lang === "en" ? "Carousel" : "Karusel"], ["list", _lang === "en" ? "List" : "Zoznam"]].map(([val, label]) => {
