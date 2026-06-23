@@ -134,6 +134,7 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [draftView, setDraftView] = useState(viewMode);
   const [draftLayout, setDraftLayout] = useState("carousel");
+  const [draftLang, setDraftLang] = useState(_lang);
 
   function scrollToChat(key) {
     const idx = Object.keys(colorChats).indexOf(key);
@@ -643,19 +644,6 @@ export default function App() {
       <div className="wrap">
         <div style={{ textAlign: "center", marginBottom: 0 }}><img src={TITLE_IMG} alt="Spiral Dynamics Lens" style={{ width: "min(228px, 42vw)", height: "auto", display: "block", margin: "0 auto" }} /></div>
         <p className="sub">{_lang === "en" ? "Multi-level view of reality" : "Viacúrovňový pohľad na realitu"}</p>
-        <div style={{ display: "flex", justifyContent: "center", marginTop: 6, marginBottom: 4 }}>
-          <div style={{ display: "inline-flex", borderRadius: 5, border: "1px solid rgba(255,255,255,0.1)", overflow: "hidden" }}>
-            {["sk", "en"].map(l => {
-              const active = _lang === l;
-              return (
-                <button key={l} onClick={() => { if (!active) { const u = new URL(window.location.href); u.searchParams.set("lang", l); window.location.href = u.toString(); } }}
-                  style={{ padding: "3px 10px", background: active ? "rgba(255,255,255,0.1)" : "none", border: "none", borderRight: l === "sk" ? "1px solid rgba(255,255,255,0.1)" : "none", color: active ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.25)", fontFamily: "DM Sans,sans-serif", fontSize: 8, letterSpacing: "0.12em", textTransform: "uppercase", cursor: active ? "default" : "pointer", transition: "all 0.2s", fontWeight: active ? 600 : 400 }}>
-                  {l.toUpperCase()}
-                </button>
-              );
-            })}
-          </div>
-        </div>
 
         {!topicSet ? (
           <div style={{ maxWidth: 600, margin: "0 auto" }}>
@@ -1051,7 +1039,7 @@ export default function App() {
               )}
             </div>
             <div style={{ marginTop: 18, borderTop: "1px solid rgba(255,255,255,.06)", paddingTop: 14 }}>
-              <button onClick={() => { setDraftView(viewMode); setDraftLayout(cardLayout); setSettingsOpen(p => !p); }} style={{ display: "flex", alignItems: "center", gap: 6, margin: "0 auto", background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,.28)", fontFamily: "'DM Sans',sans-serif", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", padding: "4px 8px", transition: "color .2s" }}
+              <button onClick={() => { setDraftView(viewMode); setDraftLayout(cardLayout); setDraftLang(_lang); setSettingsOpen(p => !p); }} style={{ display: "flex", alignItems: "center", gap: 6, margin: "0 auto", background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,.28)", fontFamily: "'DM Sans',sans-serif", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", padding: "4px 8px", transition: "color .2s" }}
                 onMouseEnter={e => e.currentTarget.style.color = "rgba(255,255,255,.65)"}
                 onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,.28)"}>
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
@@ -1087,7 +1075,21 @@ export default function App() {
                       })}
                     </div>
                   </div>
-                  <button onClick={() => { setViewMode(draftView); setCardLayout(draftLayout); setSettingsOpen(false); }}
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 10, color: "rgba(255,255,255,.35)", letterSpacing: ".8px", textTransform: "uppercase" }}>{_lang === "en" ? "Language:" : "Jazyk:"}</span>
+                    <div style={{ display: "inline-flex", borderRadius: 5, border: "1px solid rgba(255,255,255,.1)", overflow: "hidden" }}>
+                      {[["sk", "SK"], ["en", "EN"]].map(([val, label]) => {
+                        const active = draftLang === val;
+                        return (
+                          <button key={val} onClick={() => setDraftLang(val)}
+                            style={{ padding: "4px 12px", background: active ? "rgba(255,255,255,.1)" : "none", border: "none", borderRight: val === "sk" ? "1px solid rgba(255,255,255,.1)" : "none", color: active ? "rgba(255,255,255,.75)" : "rgba(255,255,255,.25)", fontFamily: "'DM Sans',sans-serif", fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", cursor: active ? "default" : "pointer", transition: "all .2s", fontWeight: active ? 600 : 400 }}>
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <button onClick={() => { setViewMode(draftView); setCardLayout(draftLayout); if (draftLang !== _lang) { const u = new URL(window.location.href); u.searchParams.set("lang", draftLang); window.location.href = u.toString(); } else { setSettingsOpen(false); } }}
                     style={{ marginTop: 4, padding: "5px 22px", background: "rgba(255,255,255,.1)", border: "1px solid rgba(255,255,255,.2)", borderRadius: 5, color: "rgba(255,255,255,.75)", fontFamily: "'DM Sans',sans-serif", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", cursor: "pointer", transition: "all .2s" }}
                     onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,.18)"; e.currentTarget.style.color = "rgba(255,255,255,1)"; }}
                     onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,.1)"; e.currentTarget.style.color = "rgba(255,255,255,.75)"; }}>
