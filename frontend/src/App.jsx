@@ -642,17 +642,12 @@ export default function App() {
       `}</style>
       <div className="bg" />
       <div className="wrap">
-        <div style={{ textAlign: "center", marginBottom: 0 }}><img src={TITLE_IMG} alt="Spiral Dynamics Lens" style={{ width: "min(228px, 42vw)", height: "auto", display: "block", margin: "0 auto" }} /></div>
-        <p className="sub">{_lang === "en" ? "Multi-level view of reality" : "Viacúrovňový pohľad na realitu"}</p>
-
         {!topicSet ? (
           <div style={{ maxWidth: 600, margin: "0 auto" }}>
-            {/* Wider container so buttons sit further from mandala centre */}
-            <div style={{ position: "relative", width: "min(460px, 94vw)", margin: "0 auto 28px", display: "flex", justifyContent: "center" }}>
-              {_lang === "en"
-                ? <SpiralMandalaCorEN size="min(240px, 50vw)" mode="single" style={{ opacity: 0.9 }} />
-                : <SpiralMandalaCore size="min(240px, 50vw)" mode="single" style={{ opacity: 0.9 }} />
-              }
+            {/* Wider container so buttons sit further from logo centre */}
+            <div style={{ position: "relative", width: "min(460px, 94vw)", margin: "0 auto 28px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <img src={TITLE_IMG} alt="Spiral Dynamics Lens" style={{ width: "min(280px, 55vw)", height: "auto", display: "block", margin: "0 auto 10px" }} />
+              <p className="sub" style={{ margin: 0 }}>{_lang === "en" ? "Multi-level view of reality" : "Viacúrovňový pohľad na realitu"}</p>
               <button id="tut-manual-btn" onClick={() => setTutorialOpen(true)} style={{ position: "absolute", top: 8, left: 0, zIndex: 100, display: "flex", alignItems: "center", gap: 5, background: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 4, padding: "4px 8px", color: "rgba(255,255,255,0.45)", fontFamily: "DM Sans,sans-serif", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", cursor: "pointer", transition: "all 0.2s" }}
                 onMouseEnter={e => { e.currentTarget.style.color="rgba(255,255,255,0.82)"; e.currentTarget.style.background="rgba(0,0,0,0.65)"; }}
                 onMouseLeave={e => { e.currentTarget.style.color="rgba(255,255,255,0.45)"; e.currentTarget.style.background="rgba(0,0,0,0.45)"; }}>
