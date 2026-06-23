@@ -132,6 +132,8 @@ export default function App() {
   const [activeCardIdx, setActiveCardIdx] = useState(0);
   const [cardLayout, setCardLayout] = useState("carousel");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [draftView, setDraftView] = useState(viewMode);
+  const [draftLayout, setDraftLayout] = useState("carousel");
 
   function scrollToChat(key) {
     const idx = Object.keys(colorChats).indexOf(key);
@@ -1049,7 +1051,7 @@ export default function App() {
               )}
             </div>
             <div style={{ marginTop: 18, borderTop: "1px solid rgba(255,255,255,.06)", paddingTop: 14 }}>
-              <button onClick={() => setSettingsOpen(p => !p)} style={{ display: "flex", alignItems: "center", gap: 6, margin: "0 auto", background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,.28)", fontFamily: "'DM Sans',sans-serif", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", padding: "4px 8px", transition: "color .2s" }}
+              <button onClick={() => { setDraftView(viewMode); setDraftLayout(cardLayout); setSettingsOpen(p => !p); }} style={{ display: "flex", alignItems: "center", gap: 6, margin: "0 auto", background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,.28)", fontFamily: "'DM Sans',sans-serif", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", padding: "4px 8px", transition: "color .2s" }}
                 onMouseEnter={e => e.currentTarget.style.color = "rgba(255,255,255,.65)"}
                 onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,.28)"}>
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
@@ -1061,9 +1063,9 @@ export default function App() {
                     <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 10, color: "rgba(255,255,255,.35)", letterSpacing: ".8px", textTransform: "uppercase" }}>{_lang === "en" ? "View:" : "Zobrazenie:"}</span>
                     <div style={{ display: "inline-flex", borderRadius: 5, border: "1px solid rgba(255,255,255,.1)", overflow: "hidden" }}>
                       {[["icons", _lang === "en" ? "Icons" : "Ikony"], ["mandala", _lang === "en" ? "Spiral" : "Špiráľa"]].map(([val, label]) => {
-                        const active = viewMode === val;
+                        const active = draftView === val;
                         return (
-                          <button key={val} onClick={() => setViewMode(val)}
+                          <button key={val} onClick={() => setDraftView(val)}
                             style={{ padding: "4px 12px", background: active ? "rgba(255,255,255,.1)" : "none", border: "none", borderRight: val === "icons" ? "1px solid rgba(255,255,255,.1)" : "none", color: active ? "rgba(255,255,255,.75)" : "rgba(255,255,255,.25)", fontFamily: "'DM Sans',sans-serif", fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", cursor: active ? "default" : "pointer", transition: "all .2s", fontWeight: active ? 600 : 400 }}>
                             {label}
                           </button>
@@ -1075,9 +1077,9 @@ export default function App() {
                     <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 10, color: "rgba(255,255,255,.35)", letterSpacing: ".8px", textTransform: "uppercase" }}>{_lang === "en" ? "Card layout:" : "Rozloženie kariet:"}</span>
                     <div style={{ display: "inline-flex", borderRadius: 5, border: "1px solid rgba(255,255,255,.1)", overflow: "hidden" }}>
                       {[["carousel", _lang === "en" ? "Carousel" : "Karusel"], ["list", _lang === "en" ? "List" : "Zoznam"]].map(([val, label]) => {
-                        const active = cardLayout === val;
+                        const active = draftLayout === val;
                         return (
-                          <button key={val} onClick={() => setCardLayout(val)}
+                          <button key={val} onClick={() => setDraftLayout(val)}
                             style={{ padding: "4px 12px", background: active ? "rgba(255,255,255,.1)" : "none", border: "none", borderRight: val === "carousel" ? "1px solid rgba(255,255,255,.1)" : "none", color: active ? "rgba(255,255,255,.75)" : "rgba(255,255,255,.25)", fontFamily: "'DM Sans',sans-serif", fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", cursor: active ? "default" : "pointer", transition: "all .2s", fontWeight: active ? 600 : 400 }}>
                             {label}
                           </button>
@@ -1085,6 +1087,12 @@ export default function App() {
                       })}
                     </div>
                   </div>
+                  <button onClick={() => { setViewMode(draftView); setCardLayout(draftLayout); setSettingsOpen(false); }}
+                    style={{ marginTop: 4, padding: "5px 22px", background: "rgba(255,255,255,.1)", border: "1px solid rgba(255,255,255,.2)", borderRadius: 5, color: "rgba(255,255,255,.75)", fontFamily: "'DM Sans',sans-serif", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", cursor: "pointer", transition: "all .2s" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,.18)"; e.currentTarget.style.color = "rgba(255,255,255,1)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,.1)"; e.currentTarget.style.color = "rgba(255,255,255,.75)"; }}>
+                    {_lang === "en" ? "Apply" : "Použiť"}
+                  </button>
                 </div>
               )}
             </div>
