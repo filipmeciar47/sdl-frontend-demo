@@ -135,6 +135,7 @@ export default function App() {
   const [draftView, setDraftView] = useState(viewMode);
   const [draftLayout, setDraftLayout] = useState("carousel");
   const [draftLang, setDraftLang] = useState(_lang);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.innerWidth <= 520);
 
   function scrollToChat(key) {
     const idx = Object.keys(colorChats).indexOf(key);
@@ -144,6 +145,11 @@ export default function App() {
   }
 
   useEffect(() => { mainEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [mainChat]);
+  useEffect(() => {
+    const fn = () => setIsMobile(window.innerWidth <= 520);
+    window.addEventListener("resize", fn);
+    return () => window.removeEventListener("resize", fn);
+  }, []);
 
   const exploredKeys = Object.keys(explored).filter(k => explored[k]);
   const expressCount = exploredKeys.filter(k => LEVEL_MAP[k]?.axis === "express").length;
@@ -638,6 +644,12 @@ export default function App() {
           .ms{padding:16px 14px}
           .cp{border-radius:8px}
           .cm{max-height:220px}
+          .crsl-wrap{overflow:hidden;min-height:420px}
+          .crsl-nav{margin-top:14px}
+          .crsl-btn{font-size:9px;padding:5px 12px}
+          .crsl-tap-l,.crsl-tap-r{position:absolute;top:0;bottom:0;width:52px;z-index:10;cursor:pointer}
+          .crsl-tap-l{left:0}
+          .crsl-tap-r{right:0}
         }
       `}</style>
       <div className="bg" />
@@ -868,11 +880,18 @@ export default function App() {
                     const nextClr = levelIdx < LEVELS.length - 1 ? LEVELS[levelIdx + 1].clr : null;
                     let transform, zIdx, opacity, flt;
                     if (cardLayout === "carousel") {
-                      if (offset === 0) { transform = "translateX(0) scale(1) rotateY(0deg)"; zIdx = 3; opacity = 1; flt = "none"; }
-                      else if (offset === -1) { transform = "translateX(-60%) scale(0.74) rotateY(22deg)"; zIdx = 2; opacity = 0.82; flt = "none"; }
-                      else if (offset === 1) { transform = "translateX(60%) scale(0.74) rotateY(-22deg)"; zIdx = 2; opacity = 0.82; flt = "none"; }
-                      else if (offset < -1) { transform = "translateX(-88%) scale(0.48) rotateY(38deg)"; zIdx = 1; opacity = 0; flt = "blur(2px)"; }
-                      else { transform = "translateX(88%) scale(0.48) rotateY(-38deg)"; zIdx = 1; opacity = 0; flt = "blur(2px)"; }
+                      if (isMobile) {
+                        if (offset === 0) { transform = "translateX(0) scale(1) rotateY(0deg)"; zIdx = 3; opacity = 1; flt = "none"; }
+                        else if (offset === -1) { transform = "translateX(-66%) scale(0.78) rotateY(15deg)"; zIdx = 2; opacity = 0.88; flt = "none"; }
+                        else if (offset === 1) { transform = "translateX(66%) scale(0.78) rotateY(-15deg)"; zIdx = 2; opacity = 0.88; flt = "none"; }
+                        else { transform = offset < 0 ? "translateX(-105%) scale(0.48) rotateY(38deg)" : "translateX(105%) scale(0.48) rotateY(-38deg)"; zIdx = 1; opacity = 0; flt = "blur(2px)"; }
+                      } else {
+                        if (offset === 0) { transform = "translateX(0) scale(1) rotateY(0deg)"; zIdx = 3; opacity = 1; flt = "none"; }
+                        else if (offset === -1) { transform = "translateX(-60%) scale(0.74) rotateY(22deg)"; zIdx = 2; opacity = 0.82; flt = "none"; }
+                        else if (offset === 1) { transform = "translateX(60%) scale(0.74) rotateY(-22deg)"; zIdx = 2; opacity = 0.82; flt = "none"; }
+                        else if (offset < -1) { transform = "translateX(-88%) scale(0.48) rotateY(38deg)"; zIdx = 1; opacity = 0; flt = "blur(2px)"; }
+                        else { transform = "translateX(88%) scale(0.48) rotateY(-38deg)"; zIdx = 1; opacity = 0; flt = "blur(2px)"; }
+                      }
                     }
                     return (
                       <div key={key} className={cardLayout === "carousel" ? ("crsl-card" + (!isActive ? " is-side" : "")) : undefined} onClick={cardLayout === "carousel" && !isActive ? () => setActiveCardIdx(idx) : undefined} style={cardLayout === "carousel" ? { transform, zIndex: zIdx, opacity, filter: flt, pointerEvents: Math.abs(offset) > 1 ? "none" : "auto" } : { position: "relative" }}>
@@ -924,6 +943,10 @@ export default function App() {
                       </div>
                     );
                   })}
+                  {isMobile && cardLayout === "carousel" && openChatKeys.length > 1 && (<>
+                    <div className="crsl-tap-l" onClick={() => setActiveCardIdx(i => Math.max(0, i - 1))} />
+                    <div className="crsl-tap-r" onClick={() => setActiveCardIdx(i => Math.min(openChatKeys.length - 1, i + 1))} />
+                  </>)}
                 </div>
                 {cardLayout === "carousel" && openChatKeys.length > 1 && (
                   <div className="crsl-nav">
