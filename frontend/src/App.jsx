@@ -678,6 +678,20 @@ export default function App() {
               <input ref={importFileRef} type="file" accept=".md" style={{ display: "none" }} onChange={e => { importAnalysis(e.target.files?.[0]); e.target.value = ""; }} />
             </div>
             <button id="tut-explore-btn" className="btn" onClick={startAnalysis} disabled={!topic.trim()}>{_lang === "en" ? "Explore" : "Preskúmať"}</button>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginTop: 22 }}>
+              <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 10, color: "rgba(255,255,255,.35)", letterSpacing: ".8px", textTransform: "uppercase" }}>{_lang === "en" ? "Language" : "Jazyk"}</span>
+              <div style={{ display: "inline-flex", borderRadius: 5, border: "1px solid rgba(255,255,255,.1)", overflow: "hidden" }}>
+                {[["sk", "SK"], ["en", "EN"]].map(([val, label]) => {
+                  const active = _lang === val;
+                  return (
+                    <button key={val} onClick={() => { if (!active) { const u = new URL(window.location.href); u.searchParams.set("lang", val); window.location.href = u.toString(); } }}
+                      style={{ padding: "4px 14px", background: active ? "rgba(255,255,255,.1)" : "none", border: "none", borderRight: val === "sk" ? "1px solid rgba(255,255,255,.1)" : "none", color: active ? "rgba(255,255,255,.75)" : "rgba(255,255,255,.25)", fontFamily: "'DM Sans',sans-serif", fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", cursor: active ? "default" : "pointer", transition: "all .2s", fontWeight: active ? 600 : 400 }}>
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         ) : (
           <>
@@ -1123,7 +1137,7 @@ export default function App() {
       {tutorialOpen && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.15)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "clamp(12px, 4vw, 32px)" }} onClick={() => setTutorialOpen(false)}>
           <div style={{ width: "min(820px, 100%)", height: "min(600px, 100%)", borderRadius: 16, overflow: "hidden", flexShrink: 0, boxShadow: "0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06)" }}>
-            <iframe src="https://sdl-tutorial.vercel.app" allowTransparency={true} style={{ width: "100%", height: "100%", border: "none", display: "block", background: "transparent" }} />
+            <iframe src={`https://sdl-tutorial.vercel.app?lang=${_lang}`} allowTransparency={true} style={{ width: "100%", height: "100%", border: "none", display: "block", background: "transparent" }} />
           </div>
         </div>
       )}
