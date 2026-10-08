@@ -193,18 +193,53 @@ async function callGemini(system, messages) {
   return parts.map(p => p.text || '').filter(Boolean).join('\n');
 }
 
+// ─── CORS: allowlist domén namiesto '*' ──────────────────────────────────────
+// Predtým tu bolo `Access-Control-Allow-Origin: *` → endpoint mohol zavolať a odpoveď
+// aj prečítať akýkoľvek web. Teraz sa echo-uje výhradne origin z allowlistu.
+//
+// ALLOWED_ORIGINS je POVINNÁ env premenná (Vercel → Settings → Environment Variables),
+// napr. `https://moj-demo-frontend.vercel.app`. Viac domén oddeľ čiarkou.
+//
+// Zámerne tu NIE JE regex na preview deploye: vzor ako `sdl-demo-frontend-*.vercel.app`
+// by pustil cudzí Vercel projekt s takým názvom. Preview domény pridaj do ALLOWED_ORIGINS.
+//
+// Origin je dôveryhodný len od prehliadača — curl si ho vymyslí. Chráni teda pred
+// cudzím webom zneužívajúcim API cez prehliadač návštevníka, nie pred skriptom;
+// na ten je denný limit nižšie a kvóta Gemini kľúča v Google AI Studio.
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+function corsOk(req, res) {
+  const origin = req.headers.origin || '';
+  if (!origin || !ALLOWED_ORIGINS.includes(origin)) return false; // presná zhoda
+  res.setHeader('Access-Control-Allow-Origin', origin); // konkrétna doména, nikdy '*'
+  res.setHeader('Vary', 'Origin'); // správne cachovanie per-origin
+  return true;
+}
+
 // ─── Handler ──────────────────────────────────────────────────────────────────
 module.exports = async function handler(req, res) {
+  if (!ALLOWED_ORIGINS.length) {
+    // Jasná 503 namiesto tichej 403 — nepomýli sa s bežnou CORS chybou.
+    console.error('ALLOWED_ORIGINS nie je nastavené — endpoint odmieta všetko.');
+    return res.status(503).json({ error: 'Server misconfigured: ALLOWED_ORIGINS not set' });
+  }
+
+  const ok = corsOk(req, res);
+
   if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    if (!ok) return res.status(403).end();
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    return res.status(200).end();
+    res.setHeader('Access-Control-Max-Age', '86400');
+    return res.status(204).end();
   }
 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  if (!ok) return res.status(403).json({ error: 'Forbidden origin' });
 
   if (!checkRateLimit()) {
     return res.status(429).json({
