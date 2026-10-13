@@ -68,6 +68,14 @@ async function callAPI(params, messages) {
   const body = JSON.stringify({ ...params, messages, lang: _lang });
   const retryDelays = [5000, 10000];
 
+  // Hláška zo servera má prednosť pred vymyslenou — server vie, čo sa stalo.
+  // Predtým sa čítalo len `error` (anglicky), takže slovenský `error_sk`
+  // sa nikdy nepoužil, aj keď ho backend posielal.
+  const srvMsg = (b, fallback) => {
+    if (!b) return fallback;
+    return (_lang === "en" ? b.error || b.error_sk : b.error_sk || b.error) || fallback;
+  };
+
   for (let attempt = 0; attempt <= retryDelays.length; attempt++) {
     const response = await fetch(`${BACKEND_URL}/api/chat`, {
       method: "POST",
@@ -76,17 +84,27 @@ async function callAPI(params, messages) {
     });
 
     if (response.status === 429) {
-      const delay = attempt < retryDelays.length ? retryDelays[attempt] : 15000;
-      await new Promise(r => setTimeout(r, delay));
-      if (attempt === retryDelays.length) {
-        throw new Error(_lang === "en" ? "Something went wrong, please try later. (429)" : "Niečo sa pokazilo, skúste neskôr. (429)");
+      const b = await response.json().catch(() => null);
+
+      // LIMIT = denný limit, TRVALÝ do zajtra → opakovanie nepomôže, hlásime hneď.
+      // Predtým sa retryovalo aj toto: človek čakal 30 s a dostal generickú
+      // chybu, kým hláška o limite zo servera sa zahodila (error_sk bol mŕtvy kód).
+      if (b && b.code === "LIMIT") {
+        throw new Error(srvMsg(b, _lang === "en" ? "Daily limit reached." : "Denný limit bol dosiahnutý."));
       }
+
+      // QUOTA a neznáme 429 sú prechodné → opakovanie má zmysel.
+      // Posledný pokus vyhodí chybu HNEĎ; predtým najprv zbytočne spal 15 s.
+      if (attempt === retryDelays.length) {
+        throw new Error(srvMsg(b, _lang === "en" ? "Something went wrong, please try later. (429)" : "Niečo sa pokazilo, skúste neskôr. (429)"));
+      }
+      await new Promise(r => setTimeout(r, retryDelays[attempt]));
       continue;
     }
 
     if (!response.ok) {
-      const err = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
-      throw new Error(err.error || (_lang === "en" ? "API error. Please try again." : "API chyba. Skúste znova."));
+      const b = await response.json().catch(() => null);
+      throw new Error(srvMsg(b, _lang === "en" ? "API error. Please try again." : "API chyba. Skúste znova."));
     }
     const data = await response.json();
     if (!data.content) throw new Error(_lang === "en" ? "Empty response. Please try again." : "Prázdna odpoveď. Skúste znova.");

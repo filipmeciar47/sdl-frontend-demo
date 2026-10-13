@@ -1,20 +1,37 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
-// ─── Rate limiting (in-memory, resets daily) ─────────────────────────────────
-let dailyCount = 0;
-let dailyResetDate = new Date().toDateString();
+// ─── Rate limiting (in-memory, PER IP, resets daily) ─────────────────────────
+// Predtým to bol JEDEN globálny čítač: prvý človek, ktorý vyčerpal denný limit,
+// zamkol appku všetkým ostatným. Teraz má každá IP vlastný čítač.
+//
+// Hranica, ktorú treba poznať: je to pamäť jednej serverless instancie, takže
+// cold start čítače vynuluje. Proti cielenému skriptu to teda ochrana nie je —
+// tou je kvóta Gemini kľúča v Google AI Studio. Toto chráni bežných
+// užívateľov pred sebou navzájom.
+//
+// IP sa drží hashovaná — v pamäti netreba surové adresy.
 const DAILY_LIMIT = parseInt(process.env.DAILY_LIMIT || '200', 10);
+let dailyResetDate = new Date().toDateString();
+let dailyHits = new Map(); // sha256(ip) -> počet za dnes
 
-function checkRateLimit() {
+function clientIp(req) {
+  const xff = req.headers['x-forwarded-for'];
+  const ip = (req.headers['x-real-ip'] || (typeof xff === 'string' ? xff.split(',')[0] : '') || '').trim();
+  return ip || 'unknown';
+}
+
+function checkRateLimit(req) {
   const today = new Date().toDateString();
   if (today !== dailyResetDate) {
-    dailyCount = 0;
+    dailyHits = new Map(); // denný reset zároveň ohraničuje pamäť
     dailyResetDate = today;
   }
-  if (dailyCount >= DAILY_LIMIT) return false;
-  dailyCount++;
-  return true;
+  const key = crypto.createHash('sha256').update(clientIp(req)).digest('hex').slice(0, 32);
+  const n = (dailyHits.get(key) || 0) + 1;
+  dailyHits.set(key, n);
+  return n <= DAILY_LIMIT;
 }
 
 // ─── Knowledge base loader ────────────────────────────────────────────────────
@@ -241,8 +258,14 @@ module.exports = async function handler(req, res) {
 
   if (!ok) return res.status(403).json({ error: 'Forbidden origin' });
 
-  if (!checkRateLimit()) {
+  // Dva rozdielne dôvody pre 429, ktoré sa NESMÚ zliať:
+  //   LIMIT — denný limit, TRVALÝ do zajtra → opakovanie nepomôže
+  //   QUOTA — kvóta Gemini, PRECHODNÁ → opakovanie má zmysel (nižšie v catch)
+  // Frontend sa podľa `code` rozhoduje, či retryovať. Bez toho retryoval oboje
+  // a hláška o dennom limite sa k užívateľovi nikdy nedostala.
+  if (!checkRateLimit(req)) {
     return res.status(429).json({
+      code: 'LIMIT',
       error: 'Daily limit of the FREE version has been reached. Try again tomorrow or switch to the full version.',
       error_sk: 'Denný limit FREE verzie bol dosiahnutý. Skúste zajtra alebo prejdite na plnú verziu.',
     });
@@ -265,8 +288,18 @@ module.exports = async function handler(req, res) {
   } catch (err) {
     console.error('Gemini error:', err.message);
     if (err.message && (err.message.includes('429') || err.message.includes('quota'))) {
-      return res.status(429).json({ error: 'Rate limit exceeded. Try again in a moment.' });
+      return res.status(429).json({
+        code: 'QUOTA',
+        error: 'The AI service is briefly rate-limited. Please try again in a moment.',
+        error_sk: 'AI služba je chvíľu zaneprázdnená. Skúste to prosím o chvíľu znova.',
+      });
     }
-    return res.status(500).json({ error: err.message || 'Server error' });
+    // Surové `err.message` sa klientovi neposiela — môže obsahovať detaily
+    // z Gemini odpovede. Detail zostáva v console.error vyššie.
+    return res.status(500).json({
+      code: 'SERVER',
+      error: 'Server error. Please try again.',
+      error_sk: 'Chyba servera. Skúste to prosím znova.',
+    });
   }
 };
