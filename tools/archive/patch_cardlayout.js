@@ -1,50 +1,73 @@
-const fs = require('fs');
-let c = fs.readFileSync('frontend/src/App.jsx', 'utf8');
-const nl = c.includes('\r\n') ? '\r\n' : '\n';
-let ok = 0, fail = 0;
+/* patch_cardlayout.js — ARCHIVOVANÉ. Jednorazový nástroj z 10/2026.
+ *
+ * Toto NIE JE prekladový skript. Pridával do dema voľbu rozloženia kariet
+ * (karusel vs zoznam) a k nej panel nastavení — teda funkciu, nie preklad.
+ * Preto jeho vzory nie sú v tools/i18n/: nesú štruktúru kódu, nie reťazce UI.
+ *
+ * Vzory sa skladajú dynamicky cez ${nl}, aby zniesli CRLF aj LF. Konec riadku
+ * sa zisťuje zo súboru, nie háda.
+ *
+ * Pôvodná verzia mala tie isté tri chyby ako revert_en*: relatívnu cestu voči
+ * aktuálnemu priečinku, .replace() len na prvý výskyt, a pri nenájdenej
+ * náhrade pokračovala a súbor nakoniec aj tak zapísala. Pojistky sú opísané
+ * v safe-patch.js a v README.md vedľa.
+ *
+ * Keďže je zmena už aplikovaná, skript dnes zápis odmietne. Náhľad poslúži
+ * na overenie, či v kóde ešte stoja miesta, ktoré očakával.
+ *
+ *   node tools/archive/patch_cardlayout.js --repo=.            (náhľad)
+ *   node tools/archive/patch_cardlayout.js --repo=. --write     (zápis)
+ */
 
-function rep(old, nw, label) {
-  if (c.includes(old)) { c = c.replace(old, nw); ok++; }
-  else { console.log('MISS:', label); fail++; }
-}
+'use strict';
+
+const { patcher } = require('./safe-patch');
+
+const p = patcher({
+  name: 'patch_cardlayout',
+  purpose: 'Rozloženie kariet karusel/zoznam + panel nastavení (archivované).',
+});
+
+const app = p.file('frontend/src/App.jsx');
+const nl = app.nl; // zistené zo súboru
 
 // 1. Add states
-rep(
+app.rep(
   `  const [activeCardIdx, setActiveCardIdx] = useState(0);`,
   `  const [activeCardIdx, setActiveCardIdx] = useState(0);${nl}  const [cardLayout, setCardLayout] = useState("carousel");${nl}  const [settingsOpen, setSettingsOpen] = useState(false);`,
   'states'
 );
 
 // 2. isActive — make layout-aware
-rep(
+app.rep(
   `                    const isActive = offset === 0;`,
   `                    const isActive = cardLayout === "list" ? true : offset === 0;`,
   'isActive'
 );
 
 // 3. Wrap transform logic in cardLayout guard
-rep(
+app.rep(
   `                    let transform, zIdx, opacity, flt;${nl}                    if (offset === 0) { transform = "translateX(0) scale(1) rotateY(0deg)"; zIdx = 3; opacity = 1; flt = "none"; }${nl}                    else if (offset === -1) { transform = "translateX(-60%) scale(0.74) rotateY(22deg)"; zIdx = 2; opacity = 0.82; flt = "none"; }${nl}                    else if (offset === 1) { transform = "translateX(60%) scale(0.74) rotateY(-22deg)"; zIdx = 2; opacity = 0.82; flt = "none"; }${nl}                    else if (offset < -1) { transform = "translateX(-88%) scale(0.48) rotateY(38deg)"; zIdx = 1; opacity = 0; flt = "blur(2px)"; }${nl}                    else { transform = "translateX(88%) scale(0.48) rotateY(-38deg)"; zIdx = 1; opacity = 0; flt = "blur(2px)"; }`,
   `                    let transform, zIdx, opacity, flt;${nl}                    if (cardLayout === "carousel") {${nl}                      if (offset === 0) { transform = "translateX(0) scale(1) rotateY(0deg)"; zIdx = 3; opacity = 1; flt = "none"; }${nl}                      else if (offset === -1) { transform = "translateX(-60%) scale(0.74) rotateY(22deg)"; zIdx = 2; opacity = 0.82; flt = "none"; }${nl}                      else if (offset === 1) { transform = "translateX(60%) scale(0.74) rotateY(-22deg)"; zIdx = 2; opacity = 0.82; flt = "none"; }${nl}                      else if (offset < -1) { transform = "translateX(-88%) scale(0.48) rotateY(38deg)"; zIdx = 1; opacity = 0; flt = "blur(2px)"; }${nl}                      else { transform = "translateX(88%) scale(0.48) rotateY(-38deg)"; zIdx = 1; opacity = 0; flt = "blur(2px)"; }${nl}                    }`,
   'transform block'
 );
 
 // 4. crsl-wrap → conditional wrapper
-rep(
+app.rep(
   `                <div className="crsl-wrap">`,
   `                <div className={cardLayout === "carousel" ? "crsl-wrap" : undefined} style={cardLayout === "list" ? { display: "flex", flexDirection: "column", gap: 20 } : undefined}>`,
   'crsl-wrap div'
 );
 
 // 5. Card outer div → conditional (carousel vs list)
-rep(
+app.rep(
   `                      <div key={key} className={"crsl-card" + (!isActive ? " is-side" : "")} onClick={!isActive ? () => setActiveCardIdx(idx) : undefined} style={{ transform, zIndex: zIdx, opacity, filter: flt, pointerEvents: Math.abs(offset) > 1 ? "none" : "auto" }}>`,
   `                      <div key={key} className={cardLayout === "carousel" ? ("crsl-card" + (!isActive ? " is-side" : "")) : undefined} onClick={cardLayout === "carousel" && !isActive ? () => setActiveCardIdx(idx) : undefined} style={cardLayout === "carousel" ? { transform, zIndex: zIdx, opacity, filter: flt, pointerEvents: Math.abs(offset) > 1 ? "none" : "auto" } : { position: "relative" }}>`,
   'card outer div'
 );
 
 // 6. crsl-nav → only in carousel mode
-rep(
+app.rep(
   `                {openChatKeys.length > 1 && (${nl}                  <div className="crsl-nav">`,
   `                {cardLayout === "carousel" && openChatKeys.length > 1 && (${nl}                  <div className="crsl-nav">`,
   'crsl-nav condition'
@@ -80,11 +103,10 @@ const settingsPanel = [
   `            </div>`,
 ].join(nl);
 
-rep(
+app.rep(
   `              )}${nl}            </div>${nl}          </>`,
   `              )}${nl}            </div>${nl}${settingsPanel}${nl}          </>`,
   'settings panel insertion'
 );
 
-fs.writeFileSync('frontend/src/App.jsx', c, 'utf8');
-console.log(`\nDone — ok: ${ok}, fail: ${fail}`);
+p.finish();
